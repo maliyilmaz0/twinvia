@@ -29,7 +29,7 @@ Shared contract changes require Kotlin and Swift tests plus shared fixtures/sche
 
 ## Signing and packaging
 
-Mac builds prefer the configured `ANDROFEST_SIGNING_IDENTITY` or an installed Developer ID Application identity. Set it to `-` for ad-hoc CI builds. The helper is signed before the enclosing app. CI does not import certificates, prompt for Keychain access, notarize, deploy, or publish a release. A distribution pipeline can be added separately after the repository and protected secret storage are configured.
+Mac builds prefer the configured `ANDROFEST_SIGNING_IDENTITY` or an installed Developer ID Application identity. Set it to `-` for ad-hoc CI builds. The helper is signed before the enclosing app. Build CI does not import certificates, prompt for Keychain access, notarize, deploy, or publish a release. The separate manual [preview release workflow](releasing.md) packages already-tested CI artifacts with narrowly scoped publication permission.
 
 Android debug signing uses the developer/runner's debug keystore. Do not replace an installed APK using a differently signed artifact without a deliberate migration; this can require uninstalling and losing app state. Release signing credentials never belong in the repository.
 

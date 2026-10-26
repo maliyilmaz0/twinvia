@@ -1,0 +1,91 @@
+name: Publish developer preview
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Successful Build and test run ID from a push to main
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-preview
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      SOURCE_RUN_ID: ${{ inputs.run_id }}
+    steps:
+      - name: Verify source CI run
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          gh api "repos/$GH_REPO/actions/runs/$SOURCE_RUN_ID" > "$RUNNER_TEMP/source-run.json"
+          gh api "repos/$GH_REPO/actions/workflows/ci.yml" > "$RUNNER_TEMP/source-workflow.json"
+          gh api "repos/$GH_REPO/actions/runs/$SOURCE_RUN_ID/jobs" > "$RUNNER_TEMP/source-jobs.json"
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          run = json.loads((Path(os.environ['RUNNER_TEMP'])/'source-run.json').read_text())
+          workflow = json.loads((Path(os.environ['RUNNER_TEMP'])/'source-workflow.json').read_text())
+          jobs = json.loads((Path(os.environ['RUNNER_TEMP'])/'source-jobs.json').read_text())['jobs']
+          assert run['status'] == 'completed' and run['conclusion'] == 'success', 'CI must pass first'
+          assert run['workflow_id'] == workflow['id'], 'Unexpected source workflow'
+          assert run['event'] == 'push' and run['head_branch'] == 'main', 'Only main push builds can be released'
+          assert run['head_repository']['full_name'] == os.environ['GH_REPO'], 'Unexpected source repository'
+          assert all(any(j['name'] == name and j['conclusion'] == 'success' for j in jobs) for name in ['publication', 'android', 'macos']), 'All required jobs must pass'
+          assert re.fullmatch('[0-9a-f]{40}', run['head_sha'])
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('sha=' + run['head_sha'] + '\n')
+          PY
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ steps.source.outputs.sha }}
+          persist-credentials: false
+      - name: Validate product publication scope
+        run: python3 scripts/check-publication.py
+      - name: Download tested binaries
+        run: |
+          set -euo pipefail
+          gh run download "$SOURCE_RUN_ID" --name macos-debug --dir .artifacts/release-input/macos
+          gh run download "$SOURCE_RUN_ID" --name android-debug --dir .artifacts/release-input/android
+      - name: Package preview
+        id: package
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          set -euo pipefail
+          version=$(python3 scripts/package-release.py --inputs .artifacts/release-input --output .artifacts/release-assets --run-id "$SOURCE_RUN_ID" --commit "$SOURCE_SHA" --repository "$GH_REPO")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          (cd .artifacts/release-assets && sha256sum --check SHA256SUMS)
+      - name: Create release draft and upload assets
+        env:
+          VERSION: ${{ steps.package.outputs.version }}
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          set -euo pipefail
+          # Refuse to overwrite any existing tag or release, including a partial draft.
+          test "$(gh api "repos/$GH_REPO/git/matching-refs/tags/v$VERSION" --jq 'length')" = 0
+          gh release create "v$VERSION" --target "$SOURCE_SHA" --title "Twinvia $VERSION — Developer Preview" --draft --prerelease --notes-file docs/releasing.md
+          gh release upload "v$VERSION" .artifacts/release-assets/*
+      - name: Verify remote bytes and publish preview
+        env:
+          VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          set -euo pipefail
+          gh release download "v$VERSION" --dir "$RUNNER_TEMP/release-verification"
+          (cd "$RUNNER_TEMP/release-verification" && sha256sum --check SHA256SUMS)
+          gh release edit "v$VERSION" --draft=false --prerelease --latest=false

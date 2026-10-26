@@ -9,18 +9,27 @@ import re
 import subprocess
 import time
 import os
+import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--serial')
+parser.add_argument('--jar', type=Path, help='Use a downloaded helper instead of building it')
+parser.add_argument('--adb', help='Path to Android platform-tools adb')
 args = parser.parse_args()
 sdk = Path(os.environ.get('ANDROID_HOME', Path.home() / 'Library/Android/sdk'))
-adb = [str(sdk/'platform-tools/adb')] + (['-s', args.serial] if args.serial else [])
+adb = [args.adb or shutil.which('adb') or str(sdk/'platform-tools/adb')] + (['-s', args.serial] if args.serial else [])
 
 def run(*arguments, check=True, input=None):
     return subprocess.run(adb + list(arguments), capture_output=True, text=True, check=check, input=input)
 
-subprocess.run(['python3', str(ROOT/'scripts/build-clipboard-helper.py')], check=True)
+bundled = Path(__file__).resolve().parent/'AndrofestClipboardHelper.jar'
+helper = args.jar or (bundled if bundled.is_file() else None)
+if helper is None:
+    subprocess.run(['python3', str(ROOT/'scripts/build-clipboard-helper.py')], check=True)
+    helper = ROOT/'.artifacts/android/AndrofestClipboardHelper.jar'
+if not helper.is_file():
+    raise SystemExit('Clipboard helper JAR does not exist')
 packages = run('shell', 'pm', 'list', 'packages', '-U', 'dev.androfest.android').stdout
 match = re.search(r'^package:dev\.androfest\.android uid:(\d+)\s*$', packages, re.M)
 if not match:
@@ -49,7 +58,7 @@ if old.isdigit():
     if 'dev.androfest.clipboard.ClipboardAgent' in command and str(uid) in command:
         run('shell', 'kill', '-TERM', old)
         time.sleep(0.3)
-run('push', str(ROOT/'.artifacts/android/AndrofestClipboardHelper.jar'), prefix+'.jar')
+run('push', str(helper), prefix+'.jar')
 # Only fixed paths and the validated numeric UID are interpolated into shell code.
 command = ('CLASSPATH='+prefix+'.jar nohup app_process / dev.androfest.clipboard.ClipboardAgent '+str(uid)
            +' < /dev/null > '+prefix+'.log 2>&1 & echo $! > '+prefix+'.pid')

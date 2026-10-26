@@ -62,6 +62,7 @@ __pycache__/
 !/scripts/doctor.sh
 !/scripts/setup-android-ci.sh
 !/scripts/generate-brand-assets.swift
+!/scripts/package-release.py
 !/scripts/test.sh
 !/scripts/test-ble-pairing.py
 !/scripts/test-clipboard.py
@@ -79,4 +80,5 @@ __pycache__/
 !/docs/ble-transport.md
 !/docs/clipboard-sync.md
 !/docs/branding.md
+!/docs/releasing.md
 /design-system/

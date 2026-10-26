@@ -33,6 +33,8 @@ The current device checks used a Galaxy S24 FE running Android 17 / One UI 9 and
 
 ## Build
 
+Prebuilt developer-preview packages are available under [GitHub Releases](https://github.com/maliyilmaz0/twinvia/releases). Read the [download, signing, and upgrade notes](docs/releasing.md) before installing. The current preview APK is debug-signed; the Mac archive is ad-hoc signed and not notarized.
+
 Clone the repository, then run these commands from its root:
 
 ```sh
@@ -124,4 +126,4 @@ python3 scripts/format-code.py          # Apply Swift/Kotlin formatting
 - [Brand assets and compatibility](docs/branding.md)
 - [Contributing](CONTRIBUTING.md)
 
-GitHub Actions and GitLab CI configurations are included. They build development artifacts and preserve test/lint reports; neither deploys, uploads signing keys, nor publishes releases automatically. Private investigations, local captures, certificates, installed dependencies, and build outputs are excluded from source publication. Run `python3 scripts/check-publication.py` before staging and pushing. Its checks complement manual review; they are not a complete secret audit.
+GitHub Actions and GitLab CI configurations build development artifacts and preserve test/lint reports. A separate, manually dispatched GitHub workflow publishes developer previews from successful main-branch CI runs; it does not upload signing keys. See [release operations](docs/releasing.md). Private investigations, local captures, certificates, installed dependencies, and build outputs are excluded from source publication. Run `python3 scripts/check-publication.py` before staging and pushing. Its checks complement manual review; they are not a complete secret audit.
