@@ -74,7 +74,7 @@ struct TrayView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Label("androfest", systemImage: "point.3.connected.trianglepath.dotted")
+                Label("Twinvia", systemImage: "point.3.connected.trianglepath.dotted")
                     .font(.system(.title3, design: .rounded, weight: .bold))
                 Spacer()
                 Text("TWO DEVICES. ONE FLOW.").font(.system(size: 9, weight: .semibold, design: .monospaced))
@@ -208,7 +208,7 @@ struct TrayView: View {
                         Spacer()
                         Toggle(
                             "Automatic clipboard sync",
-                            isOn: Binding(get: { clipboard.enabled }, set: clipboard.setEnabled)
+                            isOn: Binding(get: { clipboard.enabled }, set: { clipboard.setEnabled($0) })
                         )
                         .labelsHidden().toggleStyle(.switch)
                     }

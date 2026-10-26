@@ -53,7 +53,7 @@ data class PairingInvitation(
             require(link.length <= 4096)
             val uri = URI(link)
             require(uri.scheme == "androfest" && uri.host == "pair") {
-                "This is not an Androfest QR code"
+                "This is not a Twinvia QR code"
             }
             val query = uri.rawQuery ?: error("Pairing information is missing")
             require(query.startsWith("data=") && !query.contains('&'))

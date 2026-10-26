@@ -156,7 +156,7 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
                 item {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            "androfest",
+                            "Twinvia",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.weight(1f),

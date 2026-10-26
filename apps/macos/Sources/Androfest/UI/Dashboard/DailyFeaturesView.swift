@@ -46,7 +46,9 @@ struct DailyFeaturesView: View {
                     }.help("Next track").disabled(!enabled)
                 }
                 Divider()
-                Toggle("Automatic clipboard sync", isOn: Binding(get: { clipboard.enabled }, set: clipboard.setEnabled))
+                Toggle(
+                    "Automatic clipboard sync",
+                    isOn: Binding(get: { clipboard.enabled }, set: { clipboard.setEnabled($0) }))
                 Text(clipboard.status).font(.callout).foregroundStyle(.secondary)
                 Text("Text and links copied on one device automatically reach the other clipboard.")
                     .font(.caption).foregroundStyle(.secondary)
