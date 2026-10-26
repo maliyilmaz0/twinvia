@@ -38,6 +38,8 @@ android:
   script:
     - python3 scripts/format-code.py --check --language kotlin
     - ./scripts/build-android.sh --console=plain
+    - python3 scripts/test-dependency-policy.py
+    - ./apps/android/gradlew -p tools/clipboard-probe verifyBuildDependencySecurity assembleDebug --console=plain
   artifacts:
     when: always
     expire_in: 7 days

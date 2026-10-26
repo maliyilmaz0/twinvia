@@ -14,3 +14,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "TwinviaClipboardProbe"
+
+apply(from = file("../../apps/android/gradle/dependency-security.settings.gradle.kts"))

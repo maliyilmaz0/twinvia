@@ -53,15 +53,17 @@ jobs:
       - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
         with:
           packages: platform-tools
-      - uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
       - name: Kotlin formatting
         run: python3 scripts/format-code.py --check --language kotlin
       - name: Install SDK
-        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+        run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0'
       - name: Build, lint and test
         run: ./scripts/build-android.sh --console=plain
+      - name: Dependency policy regression test
+        run: python3 scripts/test-dependency-policy.py
       - name: Build standalone clipboard probe
-        run: ./apps/android/gradlew -p tools/clipboard-probe assembleDebug --console=plain
+        run: ./apps/android/gradlew -p tools/clipboard-probe verifyBuildDependencySecurity assembleDebug --console=plain
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:

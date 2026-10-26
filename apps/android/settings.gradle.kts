@@ -20,3 +20,5 @@ include(
     ":app",
     ":core:protocol",
 )
+
+apply(from = file("gradle/dependency-security.settings.gradle.kts"))

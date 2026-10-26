@@ -36,4 +36,4 @@ yes | "$sdkmanager" --sdk_root="$ANDROID_HOME" --licenses >/dev/null
 license_status=${PIPESTATUS[1]}
 set -o pipefail
 [[ "$license_status" == 0 ]]
-"$sdkmanager" --sdk_root="$ANDROID_HOME" 'platforms;android-36' 'build-tools;36.0.0' 'platform-tools'
+"$sdkmanager" --sdk_root="$ANDROID_HOME" 'platforms;android-37.0' 'build-tools;36.0.0' 'platform-tools'

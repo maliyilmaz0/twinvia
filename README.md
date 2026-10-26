@@ -34,7 +34,7 @@ Screen control, reliable cellular-call audio, and public Mac Wi-Fi Aware support
 
 - **Mac:** macOS 14 or later and Bluetooth LE. Apple Silicon is the currently tested build architecture.
 - **Phone:** Android 13 / API 33 or later, Google Play services, and Bluetooth LE.
-- **Development:** full Xcode with Swift 6, JDK **21**, Python 3.10+, Git, Android SDK platform **36**, build tools **36.0.0**, and platform tools.
+- **Development:** full Xcode with Swift 6, JDK **21**, Python 3.10+, Git, Android SDK platform **37.0**, build tools **36.0.0**, and platform tools.
 - Grant Bluetooth/Nearby Devices permission on both devices. Android may also request Nearby Wi-Fi permission as required by the SDK. This does not enable a shared-network transport.
 
 The current device checks used a Galaxy S24 FE running Android 17 / One UI 9 and an Apple Silicon Mac. Other vendors, extended Doze/sleep behavior, and unplugged battery life require additional validation. No administrator helper or system-security modification is part of the product build.
