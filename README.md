@@ -24,6 +24,12 @@ BLE prioritizes small messages over throughput. In one device trial, a 116,608-b
 
 Not implemented: Apple Messages integration, registration of an Android line in Apple's Phone app, SMS history management, Android-to-Mac image clipboard, remote screen control, or production PCM audio over BLE.
 
+## Upcoming features
+
+The next priorities are easier clipboard setup and recovery, stable signed installers, a unified remote phone-management interface, file-transfer queues/resume, and richer phone-data navigation. Later work includes Android-to-Mac image clipboard, optional multi-device support, and a consent-based remote-screen/control prototype on a suitable faster transport.
+
+Screen control, reliable cellular-call audio, and public Mac Wi-Fi Aware support still need platform feasibility work. They are not available in the current release or guaranteed for the next version. Read the [prioritized roadmap and completion criteria](docs/roadmap.md), [clipboard options](docs/clipboard-sync.md#improvement-options), and [transport requirements](docs/transports.md).
+
 ## Requirements
 
 - **Mac:** macOS 14 or later and Bluetooth LE. Apple Silicon is the currently tested build architecture.
@@ -126,6 +132,7 @@ python3 scripts/format-code.py          # Apply Swift/Kotlin formatting
 - [Test strategy and device checks](docs/testing.md)
 - [BLE transport and security boundaries](docs/ble-transport.md)
 - [Alternative transports, requirements, and Apple feedback](docs/transports.md)
+- [Upcoming features and implementation priorities](docs/roadmap.md)
 - [Brand assets and compatibility](docs/branding.md)
 - [Contributing](CONTRIBUTING.md)
 

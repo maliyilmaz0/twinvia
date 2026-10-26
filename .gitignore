@@ -82,4 +82,5 @@ __pycache__/
 !/docs/branding.md
 !/docs/releasing.md
 !/docs/transports.md
+!/docs/roadmap.md
 /design-system/
