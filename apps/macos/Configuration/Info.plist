@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key><string>en</string>
+    <key>CFBundleDisplayName</key><string>Twinvia</string>
+    <key>CFBundleExecutable</key><string>Androfest</string>
+    <key>CFBundleIdentifier</key><string>dev.androfest.macos</string>
+    <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+    <key>CFBundleName</key><string>Twinvia</string>
+    <key>CFBundleIconName</key><string>AppIcon</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleShortVersionString</key><string>0.9.0</string>
+    <key>CFBundleVersion</key><string>11</string>
+    <key>CFBundleURLTypes</key>
+    <array><dict>
+        <key>CFBundleTypeRole</key><string>Viewer</string>
+        <key>CFBundleURLName</key><string>Phone number</string>
+        <key>CFBundleURLSchemes</key><array><string>tel</string><string>callto</string></array>
+    </dict><dict>
+        <key>CFBundleTypeRole</key><string>Viewer</string>
+        <key>CFBundleURLName</key><string>Twinvia navigation</string>
+        <key>CFBundleURLSchemes</key><array><string>twinvia</string><string>androfest</string></array>
+    </dict></array>
+    <key>LSMinimumSystemVersion</key><string>14.0</string>
+    <key>NSHighResolutionCapable</key><true/>
+    <key>LSUIElement</key><true/>
+    <key>NSLocalNetworkUsageDescription</key><string>Connect directly and securely to your Android phone.</string>
+    <key>NSMicrophoneUsageDescription</key><string>Use the Mac microphone for supported audio diagnostics.</string>
+    <key>NSBluetoothAlwaysUsageDescription</key><string>Connect securely over Bluetooth LE and provide optional call controls.</string>
+    <key>NSDownloadsFolderUsageDescription</key><string>Save approved incoming files in Downloads/Twinvia.</string>
+    <key>CFBundleDocumentTypes</key>
+    <array><dict>
+        <key>CFBundleTypeName</key><string>File to send</string>
+        <key>CFBundleTypeRole</key><string>Viewer</string>
+        <key>LSHandlerRank</key><string>Alternate</string>
+        <key>LSItemContentTypes</key><array><string>public.data</string></array>
+    </dict></array>
+</dict>
+</plist>

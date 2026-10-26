@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "id": "82efdfb2-b381-4c93-9e63-5d2187ed1c04",
+  "type": "device.hello",
+  "timestamp": 1792188000000,
+  "sourceDeviceId": "1869df95-31a2-4d96-963c-9a6a0e5f1ca1",
+  "payload": {
+    "name": "Galaxy S24 FE",
+    "platform": "android",
+    "osVersion": "16",
+    "capabilities": []
+  }
+}

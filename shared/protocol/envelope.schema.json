@@ -1,0 +1,1202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Androfest wire envelope v1",
+  "type": "object",
+  "required": [
+    "version",
+    "id",
+    "type",
+    "timestamp",
+    "sourceDeviceId",
+    "payload"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "type": {
+      "enum": [
+        "device.hello",
+        "notification.posted",
+        "notification.removed",
+        "file.offer",
+        "file.accept",
+        "file.complete",
+        "file.cancel",
+        "device.command",
+        "command.result",
+        "device.status",
+        "text.shared"
+      ]
+    },
+    "timestamp": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "sourceDeviceId": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "oneOf": [
+    {
+      "properties": {
+        "type": {
+          "const": "device.hello"
+        },
+        "payload": {
+          "$ref": "#/$defs/deviceHello"
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "notification.posted"
+        },
+        "payload": {
+          "$ref": "#/$defs/notificationPosted"
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "notification.removed"
+        },
+        "payload": {
+          "$ref": "#/$defs/notificationRemoved"
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "file.offer"
+        },
+        "payload": {
+          "$ref": "#/$defs/fileOffer"
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "file.accept"
+        },
+        "payload": {
+          "$ref": "#/$defs/fileAccept"
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "file.complete"
+        },
+        "payload": {
+          "$ref": "#/$defs/fileComplete"
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "file.cancel"
+        },
+        "payload": {
+          "$ref": "#/$defs/fileCancel"
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "device.command"
+        },
+        "payload": {
+          "$ref": "#/$defs/deviceCommand"
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "command.result"
+        },
+        "payload": {
+          "$ref": "#/$defs/commandResult"
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "device.status"
+        },
+        "payload": {
+          "$ref": "#/$defs/deviceStatus"
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "text.shared"
+        },
+        "payload": {
+          "$ref": "#/$defs/sharedText"
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "deviceHello": {
+      "type": "object",
+      "required": [
+        "name",
+        "platform",
+        "osVersion",
+        "capabilities"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "platform": {
+          "enum": [
+            "android",
+            "macos"
+          ]
+        },
+        "osVersion": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "notificationPosted": {
+      "type": "object",
+      "required": [
+        "key",
+        "packageName",
+        "appName",
+        "postedAt",
+        "canReply"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "packageName": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "appName": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "postedAt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "canReply": {
+          "type": "boolean"
+        },
+        "appIconPng": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 87384,
+          "contentEncoding": "base64",
+          "contentMediaType": "image/png",
+          "description": "Optional PNG app icon, at most 64 KiB and 256 \u00d7 256 pixels."
+        },
+        "actionToken": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+              "minLength": 36,
+              "maxLength": 36
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "canDismiss": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "isReplay": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "True for an existing-notification snapshot; update state without a new system alert. Missing or false denotes a live event."
+        }
+      },
+      "additionalProperties": true
+    },
+    "notificationRemoved": {
+      "type": "object",
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "additionalProperties": true
+    },
+    "fileOffer": {
+      "type": "object",
+      "required": [
+        "transferId",
+        "fileName",
+        "mimeType",
+        "size",
+        "sha256"
+      ],
+      "properties": {
+        "transferId": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "minLength": 36,
+          "maxLength": 36
+        },
+        "fileName": {
+          "type": "string",
+          "pattern": "^[^/\\\\\\u0000-\\u001f\\u007f-\\u009f]+$",
+          "allOf": [
+            {
+              "pattern": "\\S"
+            },
+            {
+              "not": {
+                "enum": [
+                  ".",
+                  ".."
+                ]
+              }
+            }
+          ]
+        },
+        "mimeType": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "additionalProperties": true
+    },
+    "fileAccept": {
+      "type": "object",
+      "required": [
+        "transferId",
+        "offset"
+      ],
+      "properties": {
+        "transferId": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "minLength": 36,
+          "maxLength": 36
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "additionalProperties": true
+    },
+    "fileComplete": {
+      "type": "object",
+      "required": [
+        "transferId",
+        "sha256"
+      ],
+      "properties": {
+        "transferId": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "minLength": 36,
+          "maxLength": 36
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "additionalProperties": true
+    },
+    "fileCancel": {
+      "type": "object",
+      "required": [
+        "transferId"
+      ],
+      "properties": {
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        },
+        "transferId": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "minLength": 36,
+          "maxLength": 36
+        }
+      },
+      "additionalProperties": true
+    },
+    "deviceCommand": {
+      "type": "object",
+      "required": [
+        "action"
+      ],
+      "properties": {
+        "action": {
+          "enum": [
+            "clipboard.set",
+            "device.ring",
+            "device.ring.stop",
+            "notification.reply",
+            "notification.dismiss",
+            "media.playPause",
+            "media.next",
+            "media.previous",
+            "contacts.list",
+            "calls.list",
+            "files.list",
+            "files.download",
+            "call.audio.start",
+            "call.audio.stop",
+            "call.answer.mac",
+            "call.handoff.approve",
+            "call.end"
+          ]
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 16384
+        },
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "actionToken": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+              "minLength": 36,
+              "maxLength": 36
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "browse": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/phoneQuery"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "clipboard.set"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "text"
+            ],
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16384
+              },
+              "key": {
+                "type": "null"
+              },
+              "actionToken": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "notification.reply",
+                  "notification.dismiss"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "key",
+              "actionToken"
+            ],
+            "properties": {
+              "key": {
+                "type": "string",
+                "pattern": "\\S",
+                "maxLength": 4096
+              },
+              "actionToken": {
+                "type": "string",
+                "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+                "minLength": 36,
+                "maxLength": 36
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "notification.reply"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "text"
+            ],
+            "properties": {
+              "text": {
+                "type": "string",
+                "pattern": "\\S",
+                "maxLength": 4096
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "notification.dismiss"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "text": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "device.ring",
+                  "device.ring.stop",
+                  "media.playPause",
+                  "media.next",
+                  "media.previous"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "text": {
+                "type": "null"
+              },
+              "key": {
+                "type": "null"
+              },
+              "actionToken": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "contacts.list",
+                  "calls.list",
+                  "files.list",
+                  "files.download"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "browse"
+            ],
+            "properties": {
+              "browse": {
+                "$ref": "#/$defs/phoneQuery"
+              },
+              "text": {
+                "type": "null"
+              },
+              "key": {
+                "type": "null"
+              },
+              "actionToken": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "browse": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "contacts.list",
+                  "calls.list"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "browse": {
+                "properties": {
+                  "path": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "files.download"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "browse": {
+                "required": [
+                  "path"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "maxLength": 1024,
+                    "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))[^\\u0000]*$",
+                    "minLength": 1
+                  },
+                  "query": {
+                    "const": ""
+                  },
+                  "offset": {
+                    "const": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "call.audio.start",
+                  "call.audio.stop",
+                  "call.answer.mac",
+                  "call.handoff.approve",
+                  "call.end"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "actionToken"
+            ],
+            "properties": {
+              "actionToken": {
+                "type": "string",
+                "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+              },
+              "text": {
+                "type": "null"
+              },
+              "key": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "commandResult": {
+      "type": "object",
+      "required": [
+        "requestId",
+        "success",
+        "message"
+      ],
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+          "minLength": 36,
+          "maxLength": 36
+        },
+        "success": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 256,
+          "minLength": 1
+        },
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/phonePage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "success": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "deviceStatus": {
+      "type": "object",
+      "required": [
+        "batteryPercent",
+        "charging",
+        "locked",
+        "mediaPlaying",
+        "ringing"
+      ],
+      "properties": {
+        "batteryPercent": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "charging": {
+          "type": "boolean"
+        },
+        "locked": {
+          "type": "boolean"
+        },
+        "mediaPlaying": {
+          "type": "boolean"
+        },
+        "ringing": {
+          "type": "boolean"
+        },
+        "mediaTitle": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 512
+        },
+        "mediaArtist": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 512
+        },
+        "call": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/phoneCallState"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "sharedText": {
+      "type": "object",
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "maxLength": 16384,
+          "minLength": 1
+        },
+        "isClipboard": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "True for an automatic clipboard change; negotiated with clipboard.sync capability."
+        }
+      },
+      "additionalProperties": true
+    },
+    "phoneQuery": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1024,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))[^\\u0000]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "phoneContact": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "number"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "number": {
+          "type": "string",
+          "maxLength": 128
+        }
+      },
+      "additionalProperties": false
+    },
+    "phoneCall": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "number",
+        "timestamp",
+        "duration",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "number": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "timestamp": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "duration": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "type": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        }
+      },
+      "additionalProperties": false
+    },
+    "phoneFile": {
+      "type": "object",
+      "required": [
+        "path",
+        "name",
+        "directory",
+        "size",
+        "modified"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "maxLength": 1024,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))[^\\u0000]*$",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "directory": {
+          "type": "boolean"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "modified": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "additionalProperties": false
+    },
+    "phonePage": {
+      "type": "object",
+      "required": [
+        "kind",
+        "contacts",
+        "calls",
+        "files",
+        "total"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "contacts",
+            "calls",
+            "files"
+          ]
+        },
+        "contacts": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/phoneContact"
+          }
+        },
+        "calls": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/phoneCall"
+          }
+        },
+        "files": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/phoneFile"
+          }
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1024,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))[^\\u0000]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "contacts"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "calls": {
+                "maxItems": 0
+              },
+              "files": {
+                "maxItems": 0
+              },
+              "path": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "calls"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "contacts": {
+                "maxItems": 0
+              },
+              "files": {
+                "maxItems": 0
+              },
+              "path": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "files"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "contacts": {
+                "maxItems": 0
+              },
+              "calls": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "phoneCallState": {
+      "type": "object",
+      "required": [
+        "state"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "idle",
+            "ringing",
+            "active"
+          ]
+        },
+        "token": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approval": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "idle"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "token": {
+                "type": "null"
+              },
+              "approval": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "required": [
+              "token"
+            ],
+            "properties": {
+              "token": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

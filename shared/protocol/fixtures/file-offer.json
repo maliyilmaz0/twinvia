@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "id": "b2efdfb2-b381-4c93-9e63-5d2187ed1c04",
+  "type": "file.offer",
+  "timestamp": 1792188000000,
+  "sourceDeviceId": "1869df95-31a2-4d96-963c-9a6a0e5f1ca1",
+  "payload": {
+    "transferId": "35db3965-5a79-41f5-8d86-05497c179224",
+    "fileName": "merhaba.txt",
+    "mimeType": "text/plain",
+    "size": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

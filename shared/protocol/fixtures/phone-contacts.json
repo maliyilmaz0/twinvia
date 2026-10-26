@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "id": "12345678-1234-1234-1234-123456789abc",
+  "type": "command.result",
+  "timestamp": 1792702800000,
+  "sourceDeviceId": "87654321-4321-4321-4321-cba987654321",
+  "payload": {
+    "requestId": "12345678-1234-1234-1234-123456789abc",
+    "success": true,
+    "message": "ok",
+    "data": {
+      "kind": "contacts",
+      "contacts": [
+        {
+          "id": "42",
+          "name": "Deneme Üö 😀",
+          "number": "+1 202 555 0100"
+        }
+      ],
+      "calls": [],
+      "files": [],
+      "total": 1
+    }
+  }
+}

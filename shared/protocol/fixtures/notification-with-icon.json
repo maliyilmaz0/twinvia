@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "id": "92efdfb2-b381-4c93-9e63-5d2187ed1c04",
+  "type": "notification.posted",
+  "timestamp": 1792188000000,
+  "sourceDeviceId": "1869df95-31a2-4d96-963c-9a6a0e5f1ca1",
+  "payload": {
+    "key": "fixture-notification-1",
+    "packageName": "dev.androfest.android",
+    "appName": "Androfest",
+    "title": "Protokol testi",
+    "text": "Merhaba Mac 👋",
+    "postedAt": 1792188000000,
+    "canReply": false,
+    "appIconPng": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNQT/f8DwADZwHXQ3tvfwAAAABJRU5ErkJggg=="
+  }
+}

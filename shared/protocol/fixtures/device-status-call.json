@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "id": "12345678-1234-1234-1234-123456789abc",
+  "type": "device.status",
+  "timestamp": 1792195495000,
+  "sourceDeviceId": "98765432-1234-1234-1234-123456789abc",
+  "payload": {
+    "batteryPercent": 72,
+    "charging": true,
+    "locked": false,
+    "mediaTitle": "\u00d6rnek m\u00fczik",
+    "mediaArtist": "Sanat\u00e7\u0131",
+    "mediaPlaying": true,
+    "ringing": false,
+    "call": {
+      "state": "active",
+      "token": "12345678-1234-1234-1234-123456789abc",
+      "approval": "12345678-1234-1234-1234-123456789abd"
+    }
+  }
+}

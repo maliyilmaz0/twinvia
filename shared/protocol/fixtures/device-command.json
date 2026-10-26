@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "id": "12345678-1234-1234-1234-123456789abc",
+  "type": "device.command",
+  "timestamp": 1792195495000,
+  "sourceDeviceId": "98765432-1234-1234-1234-123456789abc",
+  "payload": {
+    "action": "notification.reply",
+    "key": "example-key",
+    "actionToken": "12345678-1234-1234-1234-123456789abc",
+    "text": "Merhaba 👋"
+  }
+}

@@ -1,0 +1,82 @@
+diff --git a/connections/swift/NearbyConnections/Sources/ConnectionManager.swift b/connections/swift/NearbyConnections/Sources/ConnectionManager.swift
+index 4f69ebf..966b0cd 100644
+--- a/connections/swift/NearbyConnections/Sources/ConnectionManager.swift
++++ b/connections/swift/NearbyConnections/Sources/ConnectionManager.swift
+@@ -219,6 +219,16 @@ public class ConnectionManager {
+     GNCFlags.enableBLEV2 = true
+   }
+ 
++  /// Local Androfest diagnostic fork. Controls the SDK flag in this process only.
++  public func setAwdlEnabledForProbe(_ enabled: Bool) {
++    GNCFlags.awdlEnabledForProbe = enabled
++  }
++
++  /// Local diagnostic: exclude LAN, hotspot, NAN and Wi-Fi Direct bandwidth upgrades.
++  public func restrictUpgradesForOfflineProbe() {
++    GNCFlags.restrictUpgradesForOfflineProbe()
++  }
++
+   /// Enable Wi-Fi Aware.
+   public func enableWifiAware() {
+     GNCFlags.wifiAwareEnabled = true
+diff --git a/connections/swift/NearbyCoreAdapter/Sources/GNCFlags.mm b/connections/swift/NearbyCoreAdapter/Sources/GNCFlags.mm
+index 2850acf..f6fefb3 100644
+--- a/connections/swift/NearbyCoreAdapter/Sources/GNCFlags.mm
++++ b/connections/swift/NearbyCoreAdapter/Sources/GNCFlags.mm
+@@ -23,6 +23,25 @@
+ 
+ @implementation GNCFlags
+ 
+++ (void)restrictUpgradesForOfflineProbe {
++  using namespace nearby::connections::config_package_nearby::nearby_connections_feature;
++  auto& flags = nearby::NearbyFlags::GetInstance();
++  flags.OverrideBoolFlagValue(kEnableWifiLanUpgrade, false);
++  flags.OverrideBoolFlagValue(kEnableWifiHotspotClient, false);
++  flags.OverrideBoolFlagValue(kEnableWifiAware, false);
++  flags.OverrideBoolFlagValue(kEnableWifiDirect, false);
++}
++
+++ (BOOL)awdlEnabledForProbe {
++  return nearby::NearbyFlags::GetInstance().GetBoolFlag(
++      nearby::connections::config_package_nearby::nearby_connections_feature::kEnableAwdl);
++}
++
+++ (void)setAwdlEnabledForProbe:(BOOL)value {
++  nearby::NearbyFlags::GetInstance().OverrideBoolFlagValue(
++      nearby::connections::config_package_nearby::nearby_connections_feature::kEnableAwdl, value);
++}
++
+ + (BOOL)enableBLEV2 {
+   // This is deprecated. It's a no-op.
+   return true;
+diff --git a/connections/swift/NearbyCoreAdapter/Sources/Public/NearbyCoreAdapter/GNCFlags.h b/connections/swift/NearbyCoreAdapter/Sources/Public/NearbyCoreAdapter/GNCFlags.h
+index 3c396c1..c3846d1 100644
+--- a/connections/swift/NearbyCoreAdapter/Sources/Public/NearbyCoreAdapter/GNCFlags.h
++++ b/connections/swift/NearbyCoreAdapter/Sources/Public/NearbyCoreAdapter/GNCFlags.h
+@@ -23,4 +23,8 @@
+ /** Whether Wi-Fi Aware is enabled in the Nearby Connections SDK. */
+ @property(nonatomic, class) BOOL wifiAwareEnabled;
+ 
++/** Local Androfest diagnostic fork: AWDL SDK flag, no system policy changes. */
++@property(nonatomic, class) BOOL awdlEnabledForProbe;
+++ (void)restrictUpgradesForOfflineProbe;
++
+ @end
+diff --git a/internal/platform/implementation/apple/Mediums/BLE/Sockets/Source/Peripheral/GNSPeripheralManager.m b/internal/platform/implementation/apple/Mediums/BLE/Sockets/Source/Peripheral/GNSPeripheralManager.m
+index 607a33e..5117fe7 100644
+--- a/internal/platform/implementation/apple/Mediums/BLE/Sockets/Source/Peripheral/GNSPeripheralManager.m
++++ b/internal/platform/implementation/apple/Mediums/BLE/Sockets/Source/Peripheral/GNSPeripheralManager.m
+@@ -169,6 +169,13 @@ - (NSString *)description {
+ }
+ 
+ - (void)addBleServiceForServiceManager:(GNSPeripheralServiceManager *)peripheralServiceManager {
++  // Do not mark a service AddInProgress while CoreBluetooth is still starting.
++  // macOS drops addService in Unknown state without a didAddService callback;
++  // peripheralManagerDidUpdateState retries after the manager becomes ready.
++  if (_cbPeripheralManager.state != CBManagerStatePoweredOn &&
++      _cbPeripheralManager.state != CBManagerStatePoweredOff) {
++    return;
++  }
+   if (peripheralServiceManager.cbServiceState != GNSBluetoothServiceStateNotAdded) {
+     // Ignored if the peripheralServiceManager.cbService was already added.
+     return;

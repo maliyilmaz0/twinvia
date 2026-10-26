@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Twinvia</string>
+    <string name="notification_access_label">Twinvia notification bridge</string>
+</resources>

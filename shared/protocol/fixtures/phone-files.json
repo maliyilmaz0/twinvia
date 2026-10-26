@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "id": "12345678-1234-1234-1234-123456789abc",
+  "type": "command.result",
+  "timestamp": 1792702800000,
+  "sourceDeviceId": "87654321-4321-4321-4321-cba987654321",
+  "payload": {
+    "requestId": "12345678-1234-1234-1234-123456789abc",
+    "success": true,
+    "message": "ok",
+    "data": {
+      "kind": "files",
+      "contacts": [],
+      "calls": [],
+      "files": [
+        {
+          "path": "Download/deneme.txt",
+          "name": "deneme.txt",
+          "directory": false,
+          "size": 12,
+          "modified": 1792702700000
+        }
+      ],
+      "total": 1,
+      "path": "Download"
+    }
+  }
+}

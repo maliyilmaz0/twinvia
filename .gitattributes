@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.bat text eol=crlf
+*.patch -whitespace
+*.png binary
+*.jar binary
+*.der binary

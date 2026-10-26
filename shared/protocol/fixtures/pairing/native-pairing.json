@@ -1,0 +1,23 @@
+{
+  "invitation": {
+    "version": 2,
+    "id": "ea91b343-ae63-41a6-822e-ab35ac68f522",
+    "deviceId": "2869df95-31a2-4d96-963c-9a6a0e5f1ca1",
+    "name": "Androfest Mac",
+    "secret": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+    "expiresAt": 1792188300000
+  },
+  "introduction": {
+    "version": 1,
+    "invitationId": "ea91b343-ae63-41a6-822e-ab35ac68f522",
+    "deviceId": "1869df95-31a2-4d96-963c-9a6a0e5f1ca1",
+    "name": "Galaxy S24 FE",
+    "port": 41283,
+    "fingerprint": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+    "nonce": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
+    "timestamp": 1792188000000,
+    "proof": "edee77b73d67e02102d9510c56197dd16d5841f22fb5acdeffe65c0caa1663eb"
+  },
+  "link": "androfest://pair?data=eyJ2ZXJzaW9uIjoyLCJpZCI6ImVhOTFiMzQzLWFlNjMtNDFhNi04MjJlLWFiMzVhYzY4ZjUyMiIsImRldmljZUlkIjoiMjg2OWRmOTUtMzFhMi00ZDk2LTk2M2MtOWE2YTBlNWYxY2ExIiwibmFtZSI6IkFuZHJvZmVzdCBNYWMiLCJzZWNyZXQiOiJhMWExYTFhMWExYTFhMWExYTFhMWExYTFhMWExYTFhMWExYTFhMWExYTFhMWExYTFhMWExYTFhMWExYTFhMWExIiwiZXhwaXJlc0F0IjoxNzkyMTg4MzAwMDAwfQ",
+  "compactIntroduction": "QUZOMRhp35Uxok2Wljyaag5fHKGhQ7KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKyw8PDw8PDw8PDw8PDw8PDwwAAAaFGuqcADUdhbGF4eSBTMjQgRkXt7ne3PWfgIQLZUQxWGX3RbVhB8i+1rN7/5lwMqhZj6w=="
+}
