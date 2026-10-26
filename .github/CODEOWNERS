@@ -1,0 +1,9 @@
+# Ownership routes reviews; enforcement also requires an eligible branch rule.
+* @maliyilmaz0
+
+/.github/ @maliyilmaz0
+/scripts/ @maliyilmaz0
+/shared/protocol/ @maliyilmaz0
+/vendor/ @maliyilmaz0
+/SECURITY.md @maliyilmaz0
+/.gitleaks.toml @maliyilmaz0

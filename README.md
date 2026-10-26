@@ -122,6 +122,8 @@ scripts/                        Build, quality, installation, and test entry poi
 ```sh
 python3 scripts/format-code.py          # Apply Swift/Kotlin formatting
 ./scripts/check.sh                     # Formatting, publication policy, tooling tests
+python3 scripts/install-security-tools.py
+python3 scripts/check-security.py      # Redacted history scan, workflows, Python correctness
 ./scripts/test.sh --console=plain       # Swift + Kotlin/Android unit tests
 ./scripts/build-android.sh              # Android unit tests, lint, APK
 ./scripts/build-macos.sh                # Helper and packaged Mac application
@@ -135,5 +137,7 @@ python3 scripts/format-code.py          # Apply Swift/Kotlin formatting
 - [Upcoming features and implementation priorities](docs/roadmap.md)
 - [Brand assets and compatibility](docs/branding.md)
 - [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [GitHub security and quality controls](docs/github-security.md)
 
 GitHub Actions and GitLab CI configurations build development artifacts and preserve test/lint reports. A separate, manually dispatched GitHub workflow publishes developer previews from successful main-branch CI runs; it does not upload signing keys. See [release operations](docs/releasing.md). Private investigations, local captures, certificates, installed dependencies, and build outputs are excluded from source publication. Run `python3 scripts/check-publication.py` before staging and pushing. Its checks complement manual review; they are not a complete secret audit.

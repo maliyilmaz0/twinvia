@@ -1,0 +1,21 @@
+name: Feature request
+description: Propose a user-visible improvement with platform constraints in mind.
+title: '[Feature] '
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and desired behavior
+    validations:
+      required: true
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements and constraints
+      description: Describe offline/network requirements, device/OS limitations and acceptable setup.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

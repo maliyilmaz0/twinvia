@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security reporting guidance
+    url: https://github.com/maliyilmaz0/twinvia/security/policy
+    about: Read the security policy before reporting sensitive findings. Do not post secrets or personal device data in an issue.

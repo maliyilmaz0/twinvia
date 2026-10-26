@@ -1,0 +1,7 @@
+name: Twinvia security analysis
+paths-ignore:
+  - '**/build/**'
+  - '**/.build/**'
+  - '.tooling/**'
+  - '.artifacts/**'
+  - 'vendor/**'

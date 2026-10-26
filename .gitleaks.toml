@@ -1,0 +1,9 @@
+title = "Twinvia full-history credential checks"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Exact synthetic notification key in public protocol fixtures; not an authentication credential"
+regexTarget = "secret"
+regexes = ['''^fixture-notification-1$''']

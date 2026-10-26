@@ -39,6 +39,8 @@ Both `.github/workflows/ci.yml` and `.gitlab-ci.yml` are provided. They validate
 
 GitHub uses hosted Ubuntu and macOS runners. GitLab's Android job uses a Linux Docker runner with JDK 21 and bootstraps checksum-pinned official Android command-line tools. Its macOS job needs a **shell runner tagged `macos`** with Xcode, Python, Git, and the required command-line tools installed. Untrusted merge requests must use disposable runners without production credentials or personal devices. The pipeline does not run real Bluetooth integration tests automatically.
 
+GitHub also runs redacted full-history secret scanning, workflow linting and Python correctness checks, exports Swift coverage, and submits resolved Android dependencies from a separate trusted main-branch workflow. CodeQL and dependency-review configurations are eligibility-gated; a skipped native scanner is not a successful vulnerability scan. See [GitHub security controls](github-security.md) for active settings, pinned tools, plan limitations and release requirements.
+
 CI configuration can be checked locally, but server scheduling, runner tags, artifact permissions, and merge-request status require validation after the remote repository is supplied. Included configuration is not evidence that a remote pipeline has run.
 
 ## Publication hygiene

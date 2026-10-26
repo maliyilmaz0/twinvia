@@ -1,0 +1,32 @@
+name: Bug report
+description: Report a reproducible Twinvia problem using sanitized details.
+title: '[Bug] '
+body:
+  - type: markdown
+    attributes:
+      value: Do not include pairing QR images, keys, clipboard contents, contact data, notification text or private research. Follow SECURITY.md for security findings.
+  - type: input
+    id: versions
+    attributes:
+      label: Versions and environment
+      description: Twinvia version, macOS version/architecture, Android version and phone model.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include the selected feature/transport and whether the phone is locked.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics
+      description: Optional state/error details only. Remove personal data and secrets.

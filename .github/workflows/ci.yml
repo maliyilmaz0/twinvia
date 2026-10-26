@@ -2,6 +2,9 @@ name: Build and test
 on:
   push:
   pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
 
 permissions:
   contents: read
@@ -16,8 +19,24 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - run: python3 scripts/check-publication.py
       - run: python3 -m unittest discover -s scripts/tests -v
+
+  security-quality:
+    needs: publication
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install checksum-verified security tools
+        run: python3 scripts/install-security-tools.py
+      - name: Check workflows, Python correctness and full Git history
+        run: python3 scripts/check-security.py
 
   android:
     needs: publication
@@ -25,6 +44,8 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
@@ -61,12 +82,19 @@ jobs:
       TWINVIA_SIGNING_IDENTITY: '-'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - name: Swift formatting
         run: python3 scripts/format-code.py --check --language swift
       - name: Shared protocol tests
-        run: swift test --package-path shared/protocol/swift
+        run: swift test --package-path shared/protocol/swift --enable-code-coverage
       - name: Desktop tests
-        run: swift test --package-path apps/macos
+        run: swift test --package-path apps/macos --enable-code-coverage
+      - name: Preserve Swift coverage
+        run: |
+          mkdir -p .artifacts/coverage
+          cp "$(swift test --package-path shared/protocol/swift --show-codecov-path)" .artifacts/coverage/shared-swift.json
+          cp "$(swift test --package-path apps/macos --show-codecov-path)" .artifacts/coverage/macos-swift.json
       - name: Build app
         run: ./scripts/build-macos.sh
       - name: Preserve app bundle
@@ -78,3 +106,8 @@ jobs:
           name: macos-debug
           retention-days: 7
           path: .artifacts/Twinvia-macos.zip
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: swift-coverage
+          retention-days: 7
+          path: .artifacts/coverage/

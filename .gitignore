@@ -63,6 +63,8 @@ __pycache__/
 !/scripts/setup-android-ci.sh
 !/scripts/generate-brand-assets.swift
 !/scripts/package-release.py
+!/scripts/install-security-tools.py
+!/scripts/check-security.py
 !/scripts/test.sh
 !/scripts/test-ble-pairing.py
 !/scripts/test-clipboard.py
@@ -83,4 +85,5 @@ __pycache__/
 !/docs/releasing.md
 !/docs/transports.md
 !/docs/roadmap.md
+!/docs/github-security.md
 /design-system/

@@ -1,0 +1,40 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: wednesday
+      time: '06:00'
+      timezone: Europe/Istanbul
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: 'ci(deps)'
+    groups:
+      actions-minor-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+  - package-ecosystem: gradle
+    directory: /apps/android
+    schedule:
+      interval: weekly
+      day: wednesday
+      time: '06:30'
+      timezone: Europe/Istanbul
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: 'build(deps)'
+    groups:
+      android-minor-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+  - package-ecosystem: gradle
+    directory: /tools/clipboard-probe
+    schedule:
+      interval: weekly
+      day: wednesday
+      time: '07:00'
+      timezone: Europe/Istanbul
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: 'test(deps)'

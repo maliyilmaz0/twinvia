@@ -46,7 +46,7 @@ jobs:
           assert run['workflow_id'] == workflow['id'], 'Unexpected source workflow'
           assert run['event'] == 'push' and run['head_branch'] == 'main', 'Only main push builds can be released'
           assert run['head_repository']['full_name'] == os.environ['GH_REPO'], 'Unexpected source repository'
-          assert all(any(j['name'] == name and j['conclusion'] == 'success' for j in jobs) for name in ['publication', 'android', 'macos']), 'All required jobs must pass'
+          assert all(any(j['name'] == name and j['conclusion'] == 'success' for j in jobs) for name in ['publication', 'security-quality', 'android', 'macos']), 'All required jobs must pass'
           assert re.fullmatch('[0-9a-f]{40}', run['head_sha'])
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write('sha=' + run['head_sha'] + '\n')

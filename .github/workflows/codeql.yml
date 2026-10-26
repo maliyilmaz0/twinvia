@@ -1,0 +1,74 @@
+name: CodeQL security analysis
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '43 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    # Native CodeQL is unavailable on this personal private repository's plan.
+    # Public repositories are eligible; private repositories need Code Security.
+    if: github.event.repository.private == false || vars.TWINVIA_CODEQL_ENABLED == 'true'
+    name: CodeQL (${{ matrix.language }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: python
+            runner: ubuntu-latest
+            build-mode: none
+          - language: actions
+            runner: ubuntu-latest
+            build-mode: none
+          - language: java-kotlin
+            runner: ubuntu-latest
+            build-mode: manual
+          - language: swift
+            runner: macos-15
+            build-mode: manual
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      security-events: write
+    env:
+      TWINVIA_SIGNING_IDENTITY: '-'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        if: matrix.language == 'java-kotlin'
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        if: matrix.language == 'java-kotlin'
+        with:
+          packages: platform-tools
+      - if: matrix.language == 'java-kotlin'
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-extended
+          config-file: .github/codeql/codeql-config.yml
+      - if: matrix.language == 'java-kotlin'
+        run: ./scripts/build-android.sh --console=plain
+      - if: matrix.language == 'swift'
+        run: ./scripts/build-macos.sh
+      - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+        with:
+          category: '/language:${{ matrix.language }}'
