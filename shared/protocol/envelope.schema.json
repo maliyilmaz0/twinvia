@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Androfest wire envelope v1",
+  "title": "Twinvia wire envelope v1",
   "type": "object",
   "required": [
     "version",

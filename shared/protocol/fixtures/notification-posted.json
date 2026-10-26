@@ -7,7 +7,7 @@
   "payload": {
     "key": "fixture-notification-1",
     "packageName": "dev.androfest.android",
-    "appName": "Androfest",
+    "appName": "Twinvia",
     "title": "Protokol testi",
     "text": "Merhaba Mac 👋",
     "postedAt": 1792188000000,
