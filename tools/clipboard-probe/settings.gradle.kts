@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AndrofestClipboardProbe"
+rootProject.name = "TwinviaClipboardProbe"

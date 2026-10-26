@@ -6,7 +6,7 @@ For other methods, their prerequisites, feature impact, and the Wi-Fi Aware disc
 
 Android uses Google Play services Nearby Connections; the Mac helper builds the public Google Nearby source pinned by `scripts/prepare-nearby-sdk.py`. Discovery advertises an invitation-specific service/context. Application traffic uses BLE only: the Mac SDK configuration disables upgrades to LAN, hotspot, Wi-Fi Direct, NAN, and AWDL. A shared network is not required.
 
-The helper is packaged at `Twinvia.app/Contents/Resources/AndrofestBluetooth.app`. It has ordinary Bluetooth permission and no restricted entitlements. The build neither installs an administrator helper nor changes system-security settings. Code-signing certificates identify the application; they do not grant unrestricted access to system services.
+The helper is packaged at `Twinvia.app/Contents/Resources/TwinviaBluetooth.app`. It has ordinary Bluetooth permission and no restricted entitlements. The build neither installs an administrator helper nor changes system-security settings. Code-signing certificates identify the application; they do not grant unrestricted access to system services.
 
 ## Authentication layers
 

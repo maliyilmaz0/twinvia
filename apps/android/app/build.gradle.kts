@@ -17,10 +17,16 @@ android {
     buildTypes {
         getByName("debug") {
             // Isolated real-device pairing tests must never replace user trust.
-            if (providers.gradleProperty("androfest.pairingTest").orNull == "true") {
+            if (
+                providers
+                    .gradleProperty("twinvia.pairingTest")
+                    .orElse(providers.gradleProperty("androfest.pairingTest"))
+                    .orNull == "true"
+            ) {
                 val suffix =
                     providers
-                        .gradleProperty("androfest.pairingTestSuffix")
+                        .gradleProperty("twinvia.pairingTestSuffix")
+                        .orElse(providers.gradleProperty("androfest.pairingTestSuffix"))
                         .orElse(".pairingtest")
                         .get()
                 require(suffix.matches(Regex("\\.pairingtest[a-z0-9]*"))) {

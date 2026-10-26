@@ -289,7 +289,7 @@ class AutomaticClipboard(private val context: Context, private val scope: Corout
         withContext(Dispatchers.IO) {
             check(allowed()) { "Clipboard sync disabled or phone locked" }
             check(_ready.value) { "Activate background clipboard helper" }
-            require(png.size in 1..dev.androfest.protocol.ClipboardImageChunk.MAX_IMAGE_BYTES)
+            require(png.size in 1..dev.twinvia.protocol.ClipboardImageChunk.MAX_IMAGE_BYTES)
             require(png.take(8) == byteArrayOf(-119, 80, 78, 71, 13, 10, 26, 10).toList())
             val bounds =
                 android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }

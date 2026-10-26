@@ -2,8 +2,8 @@
 set -euo pipefail
 source "$(dirname "$0")/common.sh"
 adb_bin="${ANDROID_HOME:?Set ANDROID_HOME to the Android SDK directory}/platform-tools/adb"
-apk="$ANDROFEST_ROOT/.artifacts/android/Twinvia-debug.apk"
-if [[ ! -f "$apk" ]]; then "$ANDROFEST_ROOT/scripts/build-android.sh"; fi
+apk="$TWINVIA_ROOT/.artifacts/android/Twinvia-debug.apk"
+if [[ ! -f "$apk" ]]; then "$TWINVIA_ROOT/scripts/build-android.sh"; fi
 serial=""
 clipboard=0
 for argument in "$@"; do
@@ -21,8 +21,8 @@ fi
 # Shell clipboard access is deliberately opt-in, not a side effect of APK installation.
 if [[ "$clipboard" == 1 ]]; then
     if [[ -n "$serial" ]]; then
-        python3 "$ANDROFEST_ROOT/scripts/enable-clipboard.py" --serial "$serial"
+        python3 "$TWINVIA_ROOT/scripts/enable-clipboard.py" --serial "$serial"
     else
-        python3 "$ANDROFEST_ROOT/scripts/enable-clipboard.py"
+        python3 "$TWINVIA_ROOT/scripts/enable-clipboard.py"
     fi
 fi

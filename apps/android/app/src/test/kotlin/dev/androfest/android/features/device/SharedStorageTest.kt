@@ -1,6 +1,6 @@
 package dev.androfest.android.features.device
 
-import dev.androfest.protocol.PhoneQuery
+import dev.twinvia.protocol.PhoneQuery
 import java.nio.file.Files
 import org.junit.Assert.*
 import org.junit.Test

@@ -29,7 +29,7 @@ public final class ProbeActivity extends Activity {
             String mode = getIntent().getStringExtra("mode");
             if ("copy".equals(mode)) {
                 String text = getIntent().getStringExtra("text");
-                if (text == null || !text.startsWith("androfest-test-") || text.length() > 16384) throw new IllegalArgumentException();
+                if (text == null || !(text.startsWith("twinvia-test-") || text.startsWith("androfest-test-")) || text.length() > 16384) throw new IllegalArgumentException();
                 manager.setPrimaryClip(ClipData.newPlainText("Twinvia test", text));
             }
             ClipData clip = manager.getPrimaryClip();

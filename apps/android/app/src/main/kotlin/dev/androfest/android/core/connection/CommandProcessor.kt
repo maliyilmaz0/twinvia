@@ -1,10 +1,10 @@
 package dev.androfest.android.core.connection
 
-import dev.androfest.protocol.CommandResult
-import dev.androfest.protocol.DeviceAction
-import dev.androfest.protocol.DeviceCommand
-import dev.androfest.protocol.WireCodec
-import dev.androfest.protocol.WireEnvelope
+import dev.twinvia.protocol.CommandResult
+import dev.twinvia.protocol.DeviceAction
+import dev.twinvia.protocol.DeviceCommand
+import dev.twinvia.protocol.WireCodec
+import dev.twinvia.protocol.WireEnvelope
 import kotlinx.coroutines.CancellationException
 
 /** Platform effects are supplied by the composition root, never by this policy. */

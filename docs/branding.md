@@ -23,8 +23,21 @@ The production artwork is deterministic vector geometry with native-size PNG exp
 
 ## Preserved identities
 
-The product was previously called Androfest. Existing package and bundle IDs, Swift modules, Keychain service names, Keystore aliases, protocol domains, pairing QR scheme, and helper executable names remain stable to preserve saved trust and platform permissions. `dev.androfest.android` and `dev.androfest.macos` are intentional compatibility identifiers, not stale display labels. The Xcode project/scheme and source/module paths also retain their original names.
+The product was previously called Androfest. User-facing branding, Swift projects/modules/source directories, app and helper executable names, Android application/theme class names, build outputs and current tooling use Twinvia. The shared Kotlin contract package is `dev.twinvia.protocol`. The Xcode project and scheme are `Twinvia`.
 
-Mac navigation accepts both `twinvia://` and the existing `androfest://` scheme. Navigation URLs never place a call without confirmation. Pairing wire values are unchanged. New received files use `Downloads/Twinvia`; previously received files in `Downloads/Androfest` are left intact. The optional shell clipboard helper should be reactivated after installing an update if its status is not ready.
+The following names remain deliberately compatible with installations made before the source rename:
+
+| Retained name | Why it stays |
+| --- | --- |
+| `dev.androfest.android` application ID and Android component namespace | Preserve installed-app data, permissions, notification-listener identity, explicit component references and helper authorization. A product rebrand does not require changing this identity. |
+| `dev.androfest.macos` and `dev.androfest.bluetooth` bundle IDs | Preserve application identity, preferences and permission association. |
+| Keychain service names, Keystore aliases, caches and helper IPC paths | Keep saved device trust, TLS keys and existing helper activation usable; do not silently create new credentials. |
+| Existing HMAC domains, wire/service identifiers and pairing QR scheme | Keep old and new peers interoperable without rescanning or inventing a protocol migration. |
+| Notification identifiers | Allow existing delivered notifications to be updated/removed consistently. |
+| Legacy signing-variable, isolated-test-property and helper-JAR aliases | Older local commands and the original 0.9.0 release kit remain usable; current examples use Twinvia names. |
+
+Names inside fixed cryptographic test fixtures and historical 0.9.0 release binaries are not rewritten. The published release assets and checksums remain immutable; current source naming can differ from that earlier build.
+
+Mac navigation accepts both `twinvia://` and the existing `androfest://` scheme. Navigation URLs never place a call without confirmation. Pairing wire values are unchanged. New received files use `Downloads/Twinvia`; previously received files in the legacy downloads folder are left intact. The optional shell clipboard helper should be reactivated after installing an update if its status is not ready.
 
 The rebrand does not add capabilities or change the documented BLE/call-audio limitations. Repository visibility and source review are separate from any future public release or trademark registration.

@@ -4,9 +4,9 @@ import dev.androfest.android.features.calls.CallAudioRelay
 import dev.androfest.android.features.calls.PhoneCallHandoff
 import dev.androfest.android.features.device.DeviceFeatures
 import dev.androfest.android.features.device.PhoneDataProvider
-import dev.androfest.protocol.CommandResult
-import dev.androfest.protocol.DeviceAction
-import dev.androfest.protocol.DeviceCommand
+import dev.twinvia.protocol.CommandResult
+import dev.twinvia.protocol.DeviceAction
+import dev.twinvia.protocol.DeviceCommand
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

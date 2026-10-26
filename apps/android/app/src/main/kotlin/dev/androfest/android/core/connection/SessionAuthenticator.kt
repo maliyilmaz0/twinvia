@@ -1,7 +1,7 @@
 package dev.androfest.android.core.connection
 
-import dev.androfest.protocol.PairingInvitation
-import dev.androfest.protocol.SessionAuthentication
+import dev.twinvia.protocol.PairingInvitation
+import dev.twinvia.protocol.SessionAuthentication
 import java.security.MessageDigest
 
 /** Pure session policy. Persistent trust is committed by the repository after this succeeds. */

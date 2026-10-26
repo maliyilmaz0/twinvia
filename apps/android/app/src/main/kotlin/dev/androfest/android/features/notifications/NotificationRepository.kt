@@ -2,12 +2,12 @@ package dev.androfest.android.features.notifications
 
 import android.content.Context
 import dev.androfest.android.core.device.DeviceIdentity
-import dev.androfest.protocol.DeviceCommand
-import dev.androfest.protocol.MessageType
-import dev.androfest.protocol.NotificationPosted
-import dev.androfest.protocol.NotificationRemoved
-import dev.androfest.protocol.WireCodec
-import dev.androfest.protocol.WireEnvelope
+import dev.twinvia.protocol.DeviceCommand
+import dev.twinvia.protocol.MessageType
+import dev.twinvia.protocol.NotificationPosted
+import dev.twinvia.protocol.NotificationRemoved
+import dev.twinvia.protocol.WireCodec
+import dev.twinvia.protocol.WireEnvelope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

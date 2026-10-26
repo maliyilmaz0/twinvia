@@ -10,9 +10,9 @@ import android.content.pm.ServiceInfo
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
-import dev.androfest.android.AndrofestApplication
 import dev.androfest.android.MainActivity
 import dev.androfest.android.R
+import dev.androfest.android.TwinviaApplication
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -35,7 +35,7 @@ class BridgeConnectionService : Service() {
                 )
                 .apply { description = "Keeps the Mac connection active in the background." }
         )
-        val bridge = (application as AndrofestApplication).bridge
+        val bridge = (application as TwinviaApplication).bridge
         ServiceCompat.startForeground(
             this,
             NOTIFICATION_ID,

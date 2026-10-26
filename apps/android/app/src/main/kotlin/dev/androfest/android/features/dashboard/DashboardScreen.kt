@@ -83,7 +83,7 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
     LaunchedEffect(sharedText, files.size) {
         if (sharedText.isNotEmpty() || files.isNotEmpty()) section = 1
     }
-    AndrofestTheme {
+    TwinviaTheme {
         if (confirmForget)
             AlertDialog(
                 onDismissRequest = { confirmForget = false },

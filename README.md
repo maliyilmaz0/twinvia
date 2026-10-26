@@ -64,11 +64,11 @@ Build outputs:
 
 ```text
 .artifacts/android/Twinvia-debug.apk
-.artifacts/android/AndrofestClipboardHelper.jar
+.artifacts/android/TwinviaClipboardHelper.jar
 .artifacts/macos/Twinvia.app
 ```
 
-The Mac script fetches a pinned Google Nearby revision and applies the product patch in `vendor/nearby/`. It builds the Bluetooth helper before packaging it inside the app. A Developer ID Application identity is used when available; set `ANDROFEST_SIGNING_IDENTITY=-` for an ad-hoc development build. CI artifacts are development builds, not notarized installers. Ad-hoc signing can change permission identity across builds.
+The Mac script fetches a pinned Google Nearby revision and applies the product patch in `vendor/nearby/`. It builds the Bluetooth helper before packaging it inside the app. A Developer ID Application identity is used when available; set `TWINVIA_SIGNING_IDENTITY=-` for an ad-hoc development build. CI artifacts are development builds, not notarized installers. Ad-hoc signing can change permission identity across builds.
 
 See [development](docs/development.md) for IDE setup, signing, CI runners, and contributor commands.
 
@@ -110,7 +110,7 @@ Then copy and paste normally. USB is used for activation, not as the bridge data
 ```text
 apps/android/app/                 Android UI and platform integrations
 apps/android/core/protocol/       Platform-independent Kotlin wire contract
-apps/macos/Sources/Androfest/     App, Connection, Features, and UI layers
+apps/macos/Sources/Twinvia/     App, Connection, Features, and UI layers
 apps/macos/BluetoothBridge/      Isolated ordinary-permission BLE helper
 shared/protocol/                 Swift contract, JSON schemas, shared fixtures
 tools/clipboard-helper/          Optional Android clipboard adapter

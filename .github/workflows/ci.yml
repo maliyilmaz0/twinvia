@@ -46,7 +46,7 @@ jobs:
           retention-days: 7
           path: |
             .artifacts/android/Twinvia-debug.apk
-            .artifacts/android/AndrofestClipboardHelper.jar
+            .artifacts/android/TwinviaClipboardHelper.jar
             apps/android/app/build/reports/tests/
             apps/android/app/build/test-results/testDebugUnitTest/
             apps/android/app/build/reports/lint-results-debug.html
@@ -58,7 +58,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 45
     env:
-      ANDROFEST_SIGNING_IDENTITY: '-'
+      TWINVIA_SIGNING_IDENTITY: '-'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Swift formatting

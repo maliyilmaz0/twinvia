@@ -1,6 +1,6 @@
 package dev.androfest.android.core.connection
 
-import dev.androfest.protocol.*
+import dev.twinvia.protocol.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonObject

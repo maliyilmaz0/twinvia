@@ -23,16 +23,21 @@ def inspect_mac(path: Path) -> str:
                 raise ValueError("Unexpected Mac archive root")
             if any(part in {"NativePeerDiscovery.app", "neighbor-advertise", "nan-tcp-relay"} for part in p.parts):
                 raise ValueError("Private research helper in Mac archive")
-        required = {
-            "Twinvia.app/Contents/Info.plist",
-            "Twinvia.app/Contents/MacOS/Androfest",
-            "Twinvia.app/Contents/Resources/AndrofestBluetooth.app/Contents/MacOS/AndrofestBleBridge",
-        }
-        if not required.issubset(names):
-            raise ValueError("Mac application or BLE helper is missing")
+        if "Twinvia.app/Contents/Info.plist" not in names:
+            raise ValueError("Mac application metadata is missing")
         info = plistlib.loads(archive.read("Twinvia.app/Contents/Info.plist"))
         if info.get("CFBundleIdentifier") != "dev.androfest.macos":
             raise ValueError("Unexpected Mac bundle identity")
+        executable = info.get("CFBundleExecutable")
+        if executable not in {"Twinvia", "Androfest"} or f"Twinvia.app/Contents/MacOS/{executable}" not in names:
+            raise ValueError("Mac application executable is missing or unexpected")
+        # The immutable 0.9.0 preview used the original internal helper name.
+        helper_paths = {
+            "Twinvia.app/Contents/Resources/TwinviaBluetooth.app/Contents/MacOS/TwinviaBleBridge",
+            "Twinvia.app/Contents/Resources/AndrofestBluetooth.app/Contents/MacOS/AndrofestBleBridge",
+        }
+        if not helper_paths.intersection(names):
+            raise ValueError("Mac BLE helper is missing")
         return info["CFBundleShortVersionString"]
 
 
@@ -48,7 +53,9 @@ def package(inputs: Path, output: Path, run_id: str, commit: str, repository: st
         raise ValueError("Platform source versions do not agree")
     mac = inputs / "macos/Twinvia-macos.zip"
     apk = inputs / "android/.artifacts/android/Twinvia-debug.apk"
-    jar = inputs / "android/.artifacts/android/AndrofestClipboardHelper.jar"
+    jar = inputs / "android/.artifacts/android/TwinviaClipboardHelper.jar"
+    if not jar.is_file():
+        jar = inputs / "android/.artifacts/android/AndrofestClipboardHelper.jar"
     if inspect_mac(mac) != version:
         raise ValueError("Mac artifact version does not match source")
     with ZipFile(apk) as archive:
@@ -62,7 +69,7 @@ def package(inputs: Path, output: Path, run_id: str, commit: str, repository: st
     shutil.copyfile(mac, output / f"Twinvia-{version}-macos-arm64-preview.zip")
     shutil.copyfile(apk, output / f"Twinvia-{version}-android-preview.apk")
     with ZipFile(output / f"Twinvia-{version}-clipboard-helper.zip", "w", ZIP_DEFLATED) as kit:
-        kit.write(jar, "TwinviaClipboardHelper/AndrofestClipboardHelper.jar")
+        kit.write(jar, "TwinviaClipboardHelper/TwinviaClipboardHelper.jar")
         kit.write(ROOT / "scripts/enable-clipboard.py", "TwinviaClipboardHelper/enable-clipboard.py")
         kit.writestr("TwinviaClipboardHelper/README.txt", (
             "Twinvia optional clipboard helper\n\n"

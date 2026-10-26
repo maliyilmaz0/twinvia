@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "AndrofestBluetoothBridge",
+    name: "TwinviaBluetoothBridge",
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(path: "../../../.tooling/google-nearby"),
@@ -10,10 +10,10 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "AndrofestBleBridge",
+            name: "TwinviaBleBridge",
             dependencies: [
                 .product(name: "NearbyConnections", package: "google-nearby"),
-                .product(name: "AndrofestProtocol", package: "swift"),
+                .product(name: "TwinviaProtocol", package: "swift"),
             ])
     ]
 )

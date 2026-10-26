@@ -7,21 +7,21 @@ import android.content.Intent
 import android.os.Bundle
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import dev.androfest.android.AndrofestApplication
+import dev.androfest.android.TwinviaApplication
 import dev.androfest.android.core.connection.BridgeConnectionService
-import dev.androfest.protocol.DeviceAction
-import dev.androfest.protocol.DeviceCommand
-import dev.androfest.protocol.NotificationPosted
+import dev.twinvia.protocol.DeviceAction
+import dev.twinvia.protocol.DeviceCommand
+import dev.twinvia.protocol.NotificationPosted
 import java.util.UUID
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.combine
 
 class BridgeNotificationListener : NotificationListenerService() {
     private val repository
-        get() = (application as AndrofestApplication).notifications
+        get() = (application as TwinviaApplication).notifications
 
     private val bridge
-        get() = (application as AndrofestApplication).bridge
+        get() = (application as TwinviaApplication).bridge
 
     private val icons by lazy { NotificationIcon(this) }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)

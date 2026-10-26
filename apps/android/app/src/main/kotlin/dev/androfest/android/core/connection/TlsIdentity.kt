@@ -35,7 +35,7 @@ class TlsIdentity {
                         KeyProperties.DIGEST_SHA384,
                         KeyProperties.DIGEST_SHA512,
                     )
-                    .setCertificateSubject(X500Principal("CN=Androfest Android"))
+                    .setCertificateSubject(X500Principal("CN=Twinvia Android"))
                     .setCertificateSerialNumber(BigInteger(128, SecureRandom()).add(BigInteger.ONE))
                     .setCertificateNotBefore(Date(now - 86_400_000))
                     .setCertificateNotAfter(Date(now + 10L * 365 * 86_400_000))

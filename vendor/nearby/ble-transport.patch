@@ -6,7 +6,7 @@ index 4f69ebf..966b0cd 100644
      GNCFlags.enableBLEV2 = true
    }
  
-+  /// Local Androfest diagnostic fork. Controls the SDK flag in this process only.
++  /// Local Twinvia diagnostic fork. Controls the SDK flag in this process only.
 +  public func setAwdlEnabledForProbe(_ enabled: Bool) {
 +    GNCFlags.awdlEnabledForProbe = enabled
 +  }
@@ -57,7 +57,7 @@ index 3c396c1..c3846d1 100644
  /** Whether Wi-Fi Aware is enabled in the Nearby Connections SDK. */
  @property(nonatomic, class) BOOL wifiAwareEnabled;
  
-+/** Local Androfest diagnostic fork: AWDL SDK flag, no system policy changes. */
++/** Local Twinvia diagnostic fork: AWDL SDK flag, no system policy changes. */
 +@property(nonatomic, class) BOOL awdlEnabledForProbe;
 ++ (void)restrictUpgradesForOfflineProbe;
 +

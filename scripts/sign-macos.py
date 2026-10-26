@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 app = Path(sys.argv[1]).resolve()
-identity = os.environ.get('ANDROFEST_SIGNING_IDENTITY')
+identity = os.environ.get('TWINVIA_SIGNING_IDENTITY') or os.environ.get('ANDROFEST_SIGNING_IDENTITY')
 if not identity:
     found = subprocess.run(['security', 'find-identity', '-v', '-p', 'codesigning'], capture_output=True, text=True, check=True)
     match = re.search(r'([A-F0-9]{40}) "Developer ID Application:', found.stdout)

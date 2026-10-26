@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import plistlib
 from pathlib import Path
 import re
 import signal
@@ -25,7 +26,7 @@ def main():
     sdk = Path(os.environ.get('ANDROID_HOME', Path.home() / 'Library/Android/sdk'))
     adb = [str(sdk / 'platform-tools/adb')] + (['-s', args.serial] if args.serial else [])
     app = ROOT / '.artifacts/macos/Twinvia.app'
-    exe = app / 'Contents/MacOS/Androfest'
+    exe = app / 'Contents/MacOS/Twinvia'
     if not args.apk.is_file() or not exe.is_file():
         parser.error('Build the isolated APK and packaged Mac app first')
 
@@ -78,7 +79,12 @@ def main():
             run('shell', 'pm', 'grant', args.package, 'android.permission.' + permission)
         # One Mac advertiser at a time. The exact daily process closes its child
         # pipe on exit; the helper stops on EOF. Never kill unrelated apps.
-        daily_executable = '/Applications/Twinvia.app/Contents/MacOS/Androfest'
+        daily_app = Path('/Applications/Twinvia.app')
+        daily_info = plistlib.loads((daily_app/'Contents/Info.plist').read_bytes())
+        daily_binary = daily_info['CFBundleExecutable']
+        if daily_binary not in {'Twinvia', 'Androfest'}:
+            raise RuntimeError('Unexpected installed Twinvia executable; daily process preserved')
+        daily_executable = str(daily_app/'Contents/MacOS'/daily_binary)
         processes = subprocess.check_output(['ps', '-axo', 'pid=,comm='], text=True)
         for row in processes.splitlines():
             fields = row.strip().split(None, 1)

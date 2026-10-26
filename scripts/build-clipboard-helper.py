@@ -14,7 +14,7 @@ for old in work.rglob('*.class'):
 platform = sdk / 'platforms/android-36/android.jar'
 source = ROOT / 'tools/clipboard-helper/src/dev/androfest/clipboard/ClipboardAgent.java'
 subprocess.run([str(java/'bin/javac'), '--release', '17', '-cp', str(platform), '-d', str(work), str(source)], check=True)
-output = ROOT / '.artifacts/android/AndrofestClipboardHelper.jar'
+output = ROOT / '.artifacts/android/TwinviaClipboardHelper.jar'
 output.parent.mkdir(parents=True, exist_ok=True)
 subprocess.run([str(sdk/'build-tools/36.0.0/d8'), '--lib', str(platform), '--min-api', '33', '--output', str(output),
                 *map(str, work.rglob('*.class'))], env={**os.environ, 'JAVA_HOME': str(java)}, check=True)

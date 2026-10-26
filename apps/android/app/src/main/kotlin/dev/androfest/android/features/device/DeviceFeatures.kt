@@ -15,7 +15,7 @@ import android.media.session.PlaybackState
 import android.os.BatteryManager
 import dev.androfest.android.features.notifications.BridgeNotificationListener
 import dev.androfest.android.features.notifications.NotificationRepository
-import dev.androfest.protocol.*
+import dev.twinvia.protocol.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

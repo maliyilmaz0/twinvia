@@ -4,8 +4,8 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
-import dev.androfest.protocol.PairingInvitation
-import dev.androfest.protocol.WireCodec
+import dev.twinvia.protocol.PairingInvitation
+import dev.twinvia.protocol.WireCodec
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator

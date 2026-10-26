@@ -11,7 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.androfest.android.AndrofestApplication
+import dev.androfest.android.TwinviaApplication
 
 /** Opened by a real notification tap; no overlay or background activity launch. */
 class CallHandoffActivity : ComponentActivity() {
@@ -23,7 +23,7 @@ class CallHandoffActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val handoff = (application as AndrofestApplication).bridge.handoff
+        val handoff = (application as TwinviaApplication).bridge.handoff
         val token = intent.getStringExtra("callToken")
         setContent {
             val call by handoff.state.collectAsStateWithLifecycle()

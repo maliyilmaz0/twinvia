@@ -27,18 +27,21 @@ class ReleasePackagingTests(unittest.TestCase):
         with ZipFile(android / "Twinvia-debug.apk", "w") as archive:
             archive.writestr("AndroidManifest.xml", b"test fixture")
             archive.writestr("classes.dex", b"test fixture")
-        with ZipFile(android / "AndrofestClipboardHelper.jar", "w") as archive:
+        with ZipFile(android / "TwinviaClipboardHelper.jar", "w") as archive:
             archive.writestr("classes.dex", b"test fixture")
         (android / "private-capture.txt").write_text("must not ship")
 
-    def write_mac(self, version="0.9.0", extra=None, helper=True):
+    def write_mac(self, version="0.9.0", extra=None, helper=True, legacy=False):
+        executable = "Androfest" if legacy else "Twinvia"
+        helper_name = "Androfest" if legacy else "Twinvia"
         with ZipFile(self.mac, "w") as archive:
             archive.writestr("Twinvia.app/Contents/Info.plist", plistlib.dumps({
                 "CFBundleIdentifier": "dev.androfest.macos", "CFBundleShortVersionString": version,
+                "CFBundleExecutable": executable,
             }))
-            archive.writestr("Twinvia.app/Contents/MacOS/Androfest", b"test fixture")
+            archive.writestr(f"Twinvia.app/Contents/MacOS/{executable}", b"test fixture")
             if helper:
-                archive.writestr("Twinvia.app/Contents/Resources/AndrofestBluetooth.app/Contents/MacOS/AndrofestBleBridge", b"fixture")
+                archive.writestr(f"Twinvia.app/Contents/Resources/{helper_name}Bluetooth.app/Contents/MacOS/{helper_name}BleBridge", b"fixture")
             if extra:
                 archive.writestr(extra, b"must reject")
 
@@ -78,6 +81,12 @@ class ReleasePackagingTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.package(run_id="123; echo invalid")
         self.assertFalse(self.output.exists())
+
+    def test_original_preview_artifacts_remain_inspectable(self):
+        self.write_mac(legacy=True)
+        android = self.inputs / "android/.artifacts/android"
+        (android / "TwinviaClipboardHelper.jar").rename(android / "AndrofestClipboardHelper.jar")
+        self.assertEqual(self.package(), "0.9.0")
 
 
 if __name__ == "__main__":

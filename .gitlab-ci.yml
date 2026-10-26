@@ -43,7 +43,7 @@ android:
     expire_in: 7 days
     paths:
       - .artifacts/android/Twinvia-debug.apk
-      - .artifacts/android/AndrofestClipboardHelper.jar
+      - .artifacts/android/TwinviaClipboardHelper.jar
       - apps/android/app/build/reports/tests/
       - apps/android/app/build/reports/lint-results-debug.html
       - apps/android/core/protocol/build/reports/tests/
@@ -57,7 +57,7 @@ macos:
   tags: [macos]
   timeout: 45m
   variables:
-    ANDROFEST_SIGNING_IDENTITY: '-'
+    TWINVIA_SIGNING_IDENTITY: '-'
   script:
     - python3 scripts/format-code.py --check --language swift
     - swift test --package-path shared/protocol/swift

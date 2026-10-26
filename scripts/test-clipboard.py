@@ -47,11 +47,11 @@ def activity(mode, text=None):
 def paste_hash():
     return json.loads(run('shell', 'run-as', probe, 'cat', 'files/result.json').stdout)['sha256']
 
-run('install','-r',str(ROOT/'tools/clipboard-probe/build/outputs/apk/debug/AndrofestClipboardProbe-debug.apk'))
+run('install','-r',str(ROOT/'tools/clipboard-probe/build/outputs/apk/debug/TwinviaClipboardProbe-debug.apk'))
 wait(lambda: phone().get('helperReady') and phone().get('connected') and mac().get('connected'), 60)
 nonce = uuid.uuid4().hex
-first = 'androfest-test-phone-'+nonce+'-şğ😀'
-second = 'androfest-test-mac-'+nonce+'-üö😀'
+first = 'twinvia-test-phone-'+nonce+'-şğ😀'
+second = 'twinvia-test-mac-'+nonce+'-üö😀'
 session_binary=ROOT/'.artifacts/PasteboardSession'
 subprocess.run(['xcrun','swiftc',str(ROOT/'tools/clipboard-probe/PasteboardSession.swift'),'-o',str(session_binary)],check=True)
 session=subprocess.Popen([str(session_binary)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True)

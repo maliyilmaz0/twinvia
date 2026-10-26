@@ -10,7 +10,7 @@ import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.webkit.MimeTypeMap
 import dev.androfest.android.features.files.FileTransferManager
 import dev.androfest.android.features.files.SelectedFile
-import dev.androfest.protocol.*
+import dev.twinvia.protocol.*
 
 /** Called on the connection's IO dispatcher. Nothing is logged or persisted. */
 class PhoneDataProvider(private val context: Context, private val files: FileTransferManager) {

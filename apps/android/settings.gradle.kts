@@ -14,7 +14,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Androfest"
+rootProject.name = "Twinvia"
 
 include(
     ":app",

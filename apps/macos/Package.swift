@@ -2,16 +2,16 @@
 import PackageDescription
 
 let package = Package(
-    name: "Androfest",
+    name: "Twinvia",
     platforms: [.macOS(.v14)],
-    products: [.executable(name: "Androfest", targets: ["Androfest"])],
+    products: [.executable(name: "Twinvia", targets: ["Twinvia"])],
     dependencies: [.package(path: "../../shared/protocol/swift")],
     targets: [
         .executableTarget(
-            name: "Androfest",
-            dependencies: [.product(name: "AndrofestProtocol", package: "swift")],
+            name: "Twinvia",
+            dependencies: [.product(name: "TwinviaProtocol", package: "swift")],
             exclude: ["Assets.xcassets"]
         ),
-        .testTarget(name: "AndrofestTests", dependencies: ["Androfest"]),
+        .testTarget(name: "TwinviaTests", dependencies: ["Twinvia"]),
     ]
 )

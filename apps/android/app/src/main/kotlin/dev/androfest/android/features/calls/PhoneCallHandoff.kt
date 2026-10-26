@@ -10,7 +10,7 @@ import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import androidx.core.app.NotificationCompat
 import dev.androfest.android.R
-import dev.androfest.protocol.*
+import dev.twinvia.protocol.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

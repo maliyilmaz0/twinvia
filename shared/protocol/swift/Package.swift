@@ -2,11 +2,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "AndrofestProtocol",
+    name: "TwinviaProtocol",
     platforms: [.macOS(.v14)],
-    products: [.library(name: "AndrofestProtocol", targets: ["AndrofestProtocol"])],
+    products: [.library(name: "TwinviaProtocol", targets: ["TwinviaProtocol"])],
     targets: [
-        .target(name: "AndrofestProtocol"),
-        .testTarget(name: "AndrofestProtocolTests", dependencies: ["AndrofestProtocol"]),
+        .target(name: "TwinviaProtocol"),
+        .testTarget(name: "TwinviaProtocolTests", dependencies: ["TwinviaProtocol"]),
     ]
 )

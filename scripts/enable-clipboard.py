@@ -23,11 +23,13 @@ adb = [args.adb or shutil.which('adb') or str(sdk/'platform-tools/adb')] + (['-s
 def run(*arguments, check=True, input=None):
     return subprocess.run(adb + list(arguments), capture_output=True, text=True, check=check, input=input)
 
-bundled = Path(__file__).resolve().parent/'AndrofestClipboardHelper.jar'
+bundled = Path(__file__).resolve().parent/'TwinviaClipboardHelper.jar'
+if not bundled.is_file():
+    bundled = Path(__file__).resolve().parent/'AndrofestClipboardHelper.jar'
 helper = args.jar or (bundled if bundled.is_file() else None)
 if helper is None:
     subprocess.run(['python3', str(ROOT/'scripts/build-clipboard-helper.py')], check=True)
-    helper = ROOT/'.artifacts/android/AndrofestClipboardHelper.jar'
+    helper = ROOT/'.artifacts/android/TwinviaClipboardHelper.jar'
 if not helper.is_file():
     raise SystemExit('Clipboard helper JAR does not exist')
 packages = run('shell', 'pm', 'list', 'packages', '-U', 'dev.androfest.android').stdout

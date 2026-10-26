@@ -18,6 +18,13 @@ if head != revision:
 subprocess.run(['git','submodule','update','--init','--depth','1'],cwd=source,check=True)
 already = subprocess.run(['git','apply','--reverse','--check',str(patch)],cwd=source,capture_output=True)
 if already.returncode != 0:
+    # Upgrade a previously applied patch whose only difference is the old
+    # product name in comments. Refuse unrelated edits rather than resetting.
+    legacy = patch.read_bytes().replace(b'Twinvia', b'Androfest')
+    legacy_applied = subprocess.run(['git','apply','--reverse','--check','-'],
+                                    input=legacy,cwd=source,capture_output=True)
+    if legacy_applied.returncode == 0:
+        subprocess.run(['git','apply','--reverse','-'],input=legacy,cwd=source,check=True)
     subprocess.run(['git','apply','--check',str(patch)],cwd=source,check=True)
     subprocess.run(['git','apply',str(patch)],cwd=source,check=True)
 print('Nearby SDK pinned revision and local transport patch ready.')

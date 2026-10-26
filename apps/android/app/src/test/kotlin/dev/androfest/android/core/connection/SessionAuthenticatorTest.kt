@@ -1,6 +1,6 @@
 package dev.androfest.android.core.connection
 
-import dev.androfest.protocol.*
+import dev.twinvia.protocol.*
 import org.junit.Assert.*
 import org.junit.Test
 

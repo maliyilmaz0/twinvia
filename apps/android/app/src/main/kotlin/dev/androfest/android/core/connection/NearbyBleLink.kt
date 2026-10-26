@@ -8,7 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.*
-import dev.androfest.protocol.*
+import dev.twinvia.protocol.*
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket

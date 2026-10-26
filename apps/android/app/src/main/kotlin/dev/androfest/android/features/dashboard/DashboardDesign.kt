@@ -68,7 +68,7 @@ private val Day =
     )
 
 @Composable
-fun AndrofestTheme(content: @Composable () -> Unit) {
+fun TwinviaTheme(content: @Composable () -> Unit) {
     MaterialTheme(colorScheme = if (isSystemInDarkTheme()) Night else Day, content = content)
 }
 

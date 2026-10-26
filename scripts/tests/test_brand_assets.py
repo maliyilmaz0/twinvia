@@ -20,7 +20,7 @@ class BrandAssetsTests(unittest.TestCase):
         self.assertIn('applicationId = "dev.androfest.android"', gradle)
 
     def test_mac_icon_catalog_contains_correct_native_pixel_sizes(self):
-        root = ROOT / "apps/macos/Sources/Androfest/Assets.xcassets"
+        root = ROOT / "apps/macos/Sources/Twinvia/Assets.xcassets"
         for name, count in [("AppIcon.appiconset", 10), ("TrayMark.imageset", 3)]:
             catalog = root / name
             data = json.loads((catalog / "Contents.json").read_text())

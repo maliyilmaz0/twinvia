@@ -5,11 +5,11 @@ import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import dev.androfest.android.AndrofestApplication
+import dev.androfest.android.TwinviaApplication
 import dev.androfest.android.features.files.FileSelection
 import dev.androfest.android.features.files.SelectedFile
-import dev.androfest.protocol.MessageType
-import dev.androfest.protocol.WireCodec
+import dev.twinvia.protocol.MessageType
+import dev.twinvia.protocol.WireCodec
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
-    private val app = application as AndrofestApplication
+    private val app = application as TwinviaApplication
     val identity = app.deviceIdentity
     val notifications = app.notifications
     val bridge = app.bridge

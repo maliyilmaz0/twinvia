@@ -6,7 +6,7 @@ import dev.androfest.android.features.device.DeviceFeatures
 import dev.androfest.android.features.device.PhoneDataProvider
 import dev.androfest.android.features.files.FileTransferManager
 import dev.androfest.android.features.notifications.NotificationRepository
-import dev.androfest.protocol.*
+import dev.twinvia.protocol.*
 import java.io.DataInputStream
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicReference
@@ -152,7 +152,7 @@ class BridgeRepository(
                             }
                     if (dev.androfest.android.BuildConfig.DEBUG)
                         android.util.Log.d(
-                            "AndrofestConnection",
+                            "TwinviaConnection",
                             "TLS server port ${server!!.localPort}",
                         )
                     if (saved.get() != null) _status.value = "Waiting for Mac connection"
@@ -464,12 +464,12 @@ class BridgeRepository(
             // Authentication material and notification content must never be logged.
             if (dev.androfest.android.BuildConfig.DEBUG) {
                 android.util.Log.d(
-                    "AndrofestConnection",
+                    "TwinviaConnection",
                     "Session closed: ${error.javaClass.simpleName}",
                 )
                 if (error is javax.net.ssl.SSLHandshakeException)
                     android.util.Log.d(
-                        "AndrofestConnection",
+                        "TwinviaConnection",
                         error.message ?: "TLS handshake failed",
                     )
             }

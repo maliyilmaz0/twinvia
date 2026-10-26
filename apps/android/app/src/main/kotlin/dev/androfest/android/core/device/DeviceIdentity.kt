@@ -2,7 +2,7 @@ package dev.androfest.android.core.device
 
 import android.content.Context
 import android.os.Build
-import dev.androfest.protocol.DeviceHello
+import dev.twinvia.protocol.DeviceHello
 import java.util.UUID
 
 class DeviceIdentity(context: Context) {

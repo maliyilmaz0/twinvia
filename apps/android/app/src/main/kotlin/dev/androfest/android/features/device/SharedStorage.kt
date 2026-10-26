@@ -1,6 +1,6 @@
 package dev.androfest.android.features.device
 
-import dev.androfest.protocol.*
+import dev.twinvia.protocol.*
 import java.io.File
 
 /** All remote paths are relative to one shared-storage root. Never expose arbitrary paths. */

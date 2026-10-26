@@ -21,7 +21,7 @@ Use full Xcode with Swift 6 and command-line tools selected, JDK 21, Python 3.10
 
 ## IDEs and dependencies
 
-Open `apps/android` in Android Studio. Open `apps/macos/Androfest.xcodeproj` in Xcode. The Swift package in `apps/macos` supports unit tests independently of app packaging. `apps/macos/BluetoothBridge` is a separate Swift 5.9 package because the upstream Google SDK is isolated from the Swift 6 UI/session target.
+Open `apps/android` in Android Studio. Open `apps/macos/Twinvia.xcodeproj` in Xcode. The Swift package in `apps/macos` supports unit tests independently of app packaging. `apps/macos/BluetoothBridge` is a separate Swift 5.9 package because the upstream Google SDK is isolated from the Swift 6 UI/session target.
 
 The Google Nearby source revision is pinned in `prepare-nearby-sdk.py`; changing it requires reviewing the product patch and running helper/device tests. A mismatched local checkout is rejected instead of reset. The patch and provenance live in `vendor/nearby/`. Do not copy the downloaded SDK into source control.
 
@@ -29,7 +29,7 @@ Shared contract changes require Kotlin and Swift tests plus shared fixtures/sche
 
 ## Signing and packaging
 
-Mac builds prefer the configured `ANDROFEST_SIGNING_IDENTITY` or an installed Developer ID Application identity. Set it to `-` for ad-hoc CI builds. The helper is signed before the enclosing app. Build CI does not import certificates, prompt for Keychain access, notarize, deploy, or publish a release. The separate manual [preview release workflow](releasing.md) packages already-tested CI artifacts with narrowly scoped publication permission.
+Mac builds prefer the configured `TWINVIA_SIGNING_IDENTITY` or an installed Developer ID Application identity. Set it to `-` for ad-hoc CI builds. The helper is signed before the enclosing app. Build CI does not import certificates, prompt for Keychain access, notarize, deploy, or publish a release. The separate manual [preview release workflow](releasing.md) packages already-tested CI artifacts with narrowly scoped publication permission.
 
 Android debug signing uses the developer/runner's debug keystore. Do not replace an installed APK using a differently signed artifact without a deliberate migration; this can require uninstalling and losing app state. Release signing credentials never belong in the repository.
 

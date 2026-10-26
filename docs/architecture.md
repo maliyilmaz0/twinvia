@@ -29,7 +29,7 @@ The relay forwards ciphertext without terminating TLS. Nearby-level connection a
 
 | Area | Responsibility |
 | --- | --- |
-| Android `AndrofestApplication` | Composition root; creates identity, notifications, and bridge. |
+| Android `TwinviaApplication` | Composition root; creates identity, notifications, and bridge. |
 | Android `core/connection/BridgeRepository` | Coordinates session lifetime, bounded consumers, feature adapters, and reactive state. |
 | Android `PeerLink` / `NearbyBleLink` | Transport contract / Google Nearby adapter. Does not decide persistent application trust. |
 | Android `SessionAuthenticator` | Pure validation of pending/saved trust, protocol version, peer identity, shared secret, and capability bounds. |

@@ -111,7 +111,7 @@ private func generate(root: URL) throws {
             let name = "icon_\(points)x\(points)\(scale == 2 ? "@2x" : "").png"
             try write(
                 png(size: points * scale, appIcon: true),
-                "apps/macos/Sources/Androfest/Assets.xcassets/AppIcon.appiconset/\(name)")
+                "apps/macos/Sources/Twinvia/Assets.xcassets/AppIcon.appiconset/\(name)")
             icons.append(["idiom": "mac", "size": "\(points)x\(points)", "scale": "\(scale)x", "filename": name])
         }
     }
@@ -119,23 +119,23 @@ private func generate(root: URL) throws {
     try write(
         JSONSerialization.data(
             withJSONObject: ["images": icons, "info": info], options: [.prettyPrinted, .sortedKeys]),
-        "apps/macos/Sources/Androfest/Assets.xcassets/AppIcon.appiconset/Contents.json")
+        "apps/macos/Sources/Twinvia/Assets.xcassets/AppIcon.appiconset/Contents.json")
     try write(
         JSONSerialization.data(withJSONObject: ["info": info], options: [.prettyPrinted, .sortedKeys]),
-        "apps/macos/Sources/Androfest/Assets.xcassets/Contents.json")
+        "apps/macos/Sources/Twinvia/Assets.xcassets/Contents.json")
     var tray: [[String: String]] = []
     for scale in 1...3 {
         let name = "tray@\(scale)x.png"
         try write(
             png(size: 18 * scale, appIcon: false),
-            "apps/macos/Sources/Androfest/Assets.xcassets/TrayMark.imageset/\(name)")
+            "apps/macos/Sources/Twinvia/Assets.xcassets/TrayMark.imageset/\(name)")
         tray.append(["idiom": "universal", "scale": "\(scale)x", "filename": name])
     }
     try write(
         JSONSerialization.data(
             withJSONObject: ["images": tray, "info": info, "properties": ["template-rendering-intent": "template"]],
             options: [.prettyPrinted, .sortedKeys]),
-        "apps/macos/Sources/Androfest/Assets.xcassets/TrayMark.imageset/Contents.json")
+        "apps/macos/Sources/Twinvia/Assets.xcassets/TrayMark.imageset/Contents.json")
     let colored =
         "<path android:fillColor=\"#BEADFF\" android:pathData=\"\(svgPath)\"/><group android:translateX=\"256\" android:scaleX=\"-1\"><path android:fillColor=\"#CAF59A\" android:pathData=\"\(svgPath)\"/></group>"
     let mono =
