@@ -278,13 +278,7 @@ final class DashboardModel: ObservableObject {
     }
 
     func refreshNotificationStatus() async {
-        let settings = await UNUserNotificationCenter.current().notificationSettings()
-        switch settings.authorizationStatus {
-        case .authorized, .provisional, .ephemeral: notificationStatus = "Notification permission enabled"
-        case .denied: notificationStatus = "Notification permission disabled"
-        case .notDetermined: notificationStatus = "Waiting for notification permission"
-        @unknown default: notificationStatus = "Notification status unknown"
-        }
+        notificationStatus = NotificationAuthorization.label(await NotificationAuthorization.currentStatus())
     }
 
     func requestNotificationAccess() async {

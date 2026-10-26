@@ -83,11 +83,11 @@ final class NotificationPresenter: NSObject, UNUserNotificationCenterDelegate {
             !mutedPackages.contains(notification.packageName)
         else { return }
         let center = UNUserNotificationCenter.current()
-        let settings = await center.notificationSettings()
+        let authorization = await NotificationAuthorization.currentStatus()
         guard deliveryTokens[notification.key] == token, !Task.isCancelled,
             !mutedPackages.contains(notification.packageName)
         else { return }
-        guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else {
+        guard NotificationAuthorization.allowsDelivery(authorization) else {
             onError?("Click 'Allow' in Notifications to enable Mac notification permission.")
             return
         }
