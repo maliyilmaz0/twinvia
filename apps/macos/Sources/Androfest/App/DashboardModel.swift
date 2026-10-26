@@ -278,7 +278,7 @@ final class DashboardModel: ObservableObject {
     }
 
     func refreshNotificationStatus() async {
-        notificationStatus = NotificationAuthorization.label(await NotificationAuthorization.currentStatus())
+        notificationStatus = NotificationAuthorization.label(await NotificationCenterSnapshot.authorizationStatus())
     }
 
     func requestNotificationAccess() async {

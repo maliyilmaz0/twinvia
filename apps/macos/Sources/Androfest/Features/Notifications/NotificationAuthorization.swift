@@ -1,18 +1,8 @@
 import Foundation
 import UserNotifications
 
-/// Older SDKs do not make UNNotificationSettings Sendable. Read it inside the callback
-/// and pass only an integer through the continuation; never transfer the settings object.
+/// Authorization policy shared by notification presentation and status UI.
 enum NotificationAuthorization {
-    @MainActor
-    static func currentStatus() async -> Int {
-        await withCheckedContinuation { continuation in
-            UNUserNotificationCenter.current().getNotificationSettings { settings in
-                continuation.resume(returning: settings.authorizationStatus.rawValue)
-            }
-        }
-    }
-
     static func allowsDelivery(_ status: Int) -> Bool {
         status == UNAuthorizationStatus.authorized.rawValue || status == UNAuthorizationStatus.provisional.rawValue
     }

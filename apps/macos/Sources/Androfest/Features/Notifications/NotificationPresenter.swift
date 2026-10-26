@@ -83,7 +83,7 @@ final class NotificationPresenter: NSObject, UNUserNotificationCenterDelegate {
             !mutedPackages.contains(notification.packageName)
         else { return }
         let center = UNUserNotificationCenter.current()
-        let authorization = await NotificationAuthorization.currentStatus()
+        let authorization = await NotificationCenterSnapshot.authorizationStatus()
         guard deliveryTokens[notification.key] == token, !Task.isCancelled,
             !mutedPackages.contains(notification.packageName)
         else { return }
@@ -160,9 +160,9 @@ final class NotificationPresenter: NSObject, UNUserNotificationCenterDelegate {
         guard incomingCallID != token else { return }
         incomingCallID = token
         let center = UNUserNotificationCenter.current()
-        let settings = await center.notificationSettings()
+        let authorization = await NotificationCenterSnapshot.authorizationStatus()
         guard incomingCallID == token,
-            settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional
+            NotificationAuthorization.allowsDelivery(authorization)
         else { return }
         let content = UNMutableNotificationContent()
         content.title = "Incoming call"
@@ -185,11 +185,8 @@ final class NotificationPresenter: NSObject, UNUserNotificationCenterDelegate {
 
     func removePackage(_ packageName: String) async {
         let center = UNUserNotificationCenter.current()
-        let delivered = await center.deliveredNotifications()
-        center.removeDeliveredNotifications(
-            withIdentifiers: delivered.filter {
-                $0.request.content.userInfo["packageName"] as? String == packageName
-            }.map { $0.request.identifier })
+        let identifiers = await NotificationCenterSnapshot.deliveredIdentifiers(for: packageName)
+        center.removeDeliveredNotifications(withIdentifiers: identifiers)
     }
 
     nonisolated func userNotificationCenter(
