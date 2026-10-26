@@ -60,6 +60,8 @@ jobs:
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - name: Build, lint and test
         run: ./scripts/build-android.sh --console=plain
+      - name: Build standalone clipboard probe
+        run: ./apps/android/gradlew -p tools/clipboard-probe assembleDebug --console=plain
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
