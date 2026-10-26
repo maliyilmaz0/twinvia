@@ -11,7 +11,7 @@ ROOT_FILES = {
     ".editorconfig", ".gitattributes", ".gitignore", ".swift-format", ".gitlab-ci.yml",
     "README.md", "CONTRIBUTING.md",
 }
-DOCS = {"architecture.md", "development.md", "testing.md", "ble-transport.md", "clipboard-sync.md", "branding.md", "releasing.md"}
+DOCS = {"architecture.md", "development.md", "testing.md", "ble-transport.md", "clipboard-sync.md", "branding.md", "releasing.md", "transports.md"}
 SCRIPTS = {
     "common.sh", "build-android.sh", "build-macos.sh", "build-ble-helper.py",
     "build-clipboard-helper.py", "prepare-nearby-sdk.py", "sign-macos.py",

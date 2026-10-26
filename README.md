@@ -6,6 +6,8 @@ A native Android application and macOS menu-bar companion for notifications, cli
 
 **Version 0.9.0 · Developer preview.** The applications communicate locally through Google Nearby Connections and a certificate-pinned TLS session. A shared Wi-Fi network, hotspot, or cloud relay is not required for application traffic. Internet access is needed to download build dependencies; Android also requires Google Play services.
 
+See the [transport comparison and requirements](docs/transports.md) for why this preview uses BLE, what Wi-Fi Aware/AWDL/USB would change, and the Apple platform-support discussion.
+
 ## Features and limitations
 
 | Feature | Available behavior |
@@ -123,6 +125,7 @@ python3 scripts/format-code.py          # Apply Swift/Kotlin formatting
 - [Development and CI](docs/development.md)
 - [Test strategy and device checks](docs/testing.md)
 - [BLE transport and security boundaries](docs/ble-transport.md)
+- [Alternative transports, requirements, and Apple feedback](docs/transports.md)
 - [Brand assets and compatibility](docs/branding.md)
 - [Contributing](CONTRIBUTING.md)
 

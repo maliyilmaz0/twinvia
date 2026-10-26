@@ -81,4 +81,5 @@ __pycache__/
 !/docs/clipboard-sync.md
 !/docs/branding.md
 !/docs/releasing.md
+!/docs/transports.md
 /design-system/

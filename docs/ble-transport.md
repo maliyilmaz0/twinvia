@@ -1,5 +1,7 @@
 # BLE transport
 
+For other methods, their prerequisites, feature impact, and the Wi-Fi Aware discussion with Apple, see [transport options](transports.md). This document describes the shipped BLE implementation.
+
 ## Supported path
 
 Android uses Google Play services Nearby Connections; the Mac helper builds the public Google Nearby source pinned by `scripts/prepare-nearby-sdk.py`. Discovery advertises an invitation-specific service/context. Application traffic uses BLE only: the Mac SDK configuration disables upgrades to LAN, hotspot, Wi-Fi Direct, NAN, and AWDL. A shared network is not required.
