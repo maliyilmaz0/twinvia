@@ -6,7 +6,7 @@ Twinvia is a developer preview. The latest source and latest preview release are
 
 Do not disclose exploit details, credentials, pairing QR images, clipboard contents, contacts, notification text or device captures in a public issue or pull request.
 
-When GitHub private vulnerability reporting is enabled, use **Security → Report a vulnerability** on this repository. While this repository is private, use the private issue tracker available to authorized collaborators for a sanitized initial report and arrange sensitive evidence directly with the repository owner, [maliyilmaz0](https://github.com/maliyilmaz0). An external reporter who cannot access the private repository should use an existing direct contact with the owner; a public issue is not a substitute for a confidential report. GitHub private reporting must be configured before a public launch; no public security mailbox is currently advertised.
+Use **Security → Report a vulnerability** on this repository to submit a confidential report through GitHub private vulnerability reporting. Do not use the public issue tracker for sensitive evidence. If the reporting control is temporarily unavailable, use an existing direct contact with the repository owner, [maliyilmaz0](https://github.com/maliyilmaz0), rather than disclosing details publicly. No separate public security mailbox is advertised.
 
 Include the affected version/commit, OS/device, prerequisites, impact, and minimal reproduction using synthetic data. Label static suspicions, observed behavior and proven impact separately. Avoid excessive traffic, testing other people's devices, or collecting unrelated personal data.
 
