@@ -65,6 +65,7 @@ __pycache__/
 !/scripts/package-release.py
 !/scripts/install-security-tools.py
 !/scripts/check-security.py
+!/scripts/test-dependency-policy.py
 !/scripts/test.sh
 !/scripts/test-ble-pairing.py
 !/scripts/test-clipboard.py

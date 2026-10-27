@@ -12,11 +12,12 @@ Configuration reviewed **27 October 2026** for `maliyilmaz0/twinvia`. Public vis
 | Workflow token | Read-only by default; cannot approve pull requests. Checkout does not persist credentials. |
 | Privileged workflows | Release publication gets only its required contents/actions access; dependency submission gets contents write only in a trusted main-branch job. Neither uses `pull_request_target`. |
 | Forks | All external contributors require workflow approval; untrusted fork pull requests do not receive secrets or write tokens. No `pull_request_target` workflow executes contributor code. |
-| Repository reuse | Other repositories have no access to this private repository's actions/workflows |
+| Repository reuse | Public workflow source is visible; execution still uses the reviewed action allowlist and restricted token permissions |
 | Merge policy | Squash merges only, merged branches automatically deleted, update-branch UI enabled; automatic merging remains off |
 | Release immutability | Enabled for future releases. The original v0.9.0 release is not claimed to become retroactively immutable. |
 | Ownership and intake | CODEOWNERS routes review to `@maliyilmaz0`; pull-request and sanitized bug/feature templates are present; private vulnerability reporting provides a confidential channel |
-| Main branch | Pull requests, resolved conversations, linear history and up-to-date successful `publication`, `security-quality`, `android` and `macos` checks are required, including for administrators; force pushes/deletion are blocked. No impossible independent self-approval requirement is imposed on the single maintainer. |
+| Main branch | Pull requests, resolved conversations, linear history and up-to-date successful `publication`, `security-quality`, `android`, `macos` and `dependency-review` checks are required, including for administrators; force pushes/deletion are blocked. No impossible independent self-approval requirement is imposed on the single maintainer. |
+| CodeQL merge gate | All four language jobs are required individually. CodeQL analysis errors and medium-or-higher security findings block merging into `main`; no bypass actors. |
 | Version tags | Updates/deletion of `v*` tags are blocked; creation remains available to the authorized publisher. |
 | Native secret protection | GitHub secret scanning and push protection are enabled for the public repository; scan results remain separate from these enablement settings. |
 
@@ -69,7 +70,20 @@ The CodeQL matrix covers Python, Actions, Java/Kotlin, and Swift using security-
 
 The first resolved Android snapshot surfaced 52 advisory alerts across 13 package names, including three critical alerts, on 27 October 2026. None of those package names appeared in the app's checked `debugRuntimeClasspath`; the submitted inventory also includes build/plugin dependencies. This is evidence about dependency placement, not proof of non-exploitability or permission to dismiss alerts. The build environment remains part of the supply chain, and graph coverage is not a binary-content audit.
 
-Keep these alerts open while tracing tool/plugin ownership and testing compatible upgrades. The initial standalone-probe AGP update and app-library update PRs are not remediation for all 52 findings. Major Gradle/AGP/Kotlin/SDK changes need a coordinated migration and regression checks, not forced transitive-version overrides or mass alert suppression. Counts and severity are a dated snapshot; the GitHub alert list is authoritative.
+The remediation upgrades the wrapper to Gradle 9.8.2 (distribution and wrapper checksums verified), AGP to 9.4.1, compile SDK to 37, and the reviewed app libraries. Android Kotlin uses AGP's built-in support; target SDK remains 36. This removes the older AGP's Netty/UTP dependency path and updates Commons Compress/Protobuf selections. AGP 9.4.1 still requests older Bouncy Castle, JDOM and jose4j versions, so a shared settings policy raises their resolved patch floors for both the app and probe:
+
+| Dependency family | Minimum resolved version |
+| --- | --- |
+| Bouncy Castle provider / PKIX / utilities | 1.86, aligned |
+| jose4j | 0.9.7 |
+| JDOM | 2.0.6.1 |
+| Commons Compress | 1.27.1 |
+| Protobuf Java / Kotlin | 3.25.5 |
+| Netty modules, if introduced by tooling | 4.1.137.Final, aligned |
+
+The policy covers plugin/buildscript and project configurations. It does not add these libraries to the APK, remove dependency inventory, dismiss advisories, or downgrade a newer selected version. `verifyBuildDependencySecurity` checks resolved plugin artifacts. `test-dependency-policy.py` resolves deliberately old real dependencies to verify crypto/XML patching, Netty alignment and preservation of a newer Commons Compress request. App/probe builds and CI test compatibility; future upstream plugin upgrades should reassess whether these floors are still needed.
+
+After merging, regenerate the trusted dependency snapshot and inspect the live alert list before claiming closure. The original 52 is a dated baseline, not a current zero-alert guarantee. Static code analysis and dependency advisory coverage remain distinct.
 
 References: [private CodeQL eligibility](https://docs.github.com/en/code-security/reference/code-scanning/troubleshoot-analysis-errors/private-repository-enablement), [secret scanning availability](https://docs.github.com/en/code-security/how-tos/secure-your-secrets/detect-secret-leaks/enable-secret-scanning), [dependency review](https://docs.github.com/en/code-security/concepts/supply-chain-security/dependency-review), [GitHub Code Quality enablement](https://docs.github.com/en/code-security/how-tos/maintain-quality-code/enable-code-quality), and [Code Quality costs](https://docs.github.com/en/enterprise-cloud%40latest/code-security/how-tos/maintain-quality-code/view-and-manage-cost).
 
@@ -83,3 +97,5 @@ References: [private CodeQL eligibility](https://docs.github.com/en/code-securit
 6. Finish stable Android release-key handling and Developer ID/hardened/notarized Mac distribution. Current developer-preview signing limitations remain unchanged.
 
 Account-wide 2FA/passkeys, organization membership and paid billing changes are owner decisions outside this repository setup; this work does not modify them.
+
+Swift analysis pins the supported Xcode 16.4 toolchain on macOS 15. Intel/Rosetta preparation matches the current CodeQL tracer architecture; the ordinary shipping build retains its native host architecture. The nine native C/C++/Objective-C dependency targets (BoringSSL, Abseil, Protobuf, Ukey2, JSON, smhasher and Nearby native adapters) are prepared before extraction; Swift app, shared-protocol, Google Nearby Swift and BLE-helper sources compile after CodeQL initialization. This avoids tracing unrelated native dependency preparation without treating cached Swift compilation as scan evidence.

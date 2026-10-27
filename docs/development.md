@@ -2,7 +2,7 @@
 
 ## Toolchain
 
-Use full Xcode with Swift 6 and command-line tools selected, JDK 21, Python 3.10+, Git, and Android SDK 36 / build tools 36.0.0 / platform tools. Set `JAVA_HOME` and `ANDROID_HOME` explicitly when your environment differs. Android Studio's **Gradle JVM must be JDK 21**; do not let its bundled newer JVM override the project's Gradle runtime.
+Use full Xcode with Swift 6 and command-line tools selected, JDK 21, Python 3.10+, Git, and Android SDK 37.0 / build tools 36.0.0 / platform tools. Set `JAVA_HOME` and `ANDROID_HOME` explicitly when your environment differs. Android Studio's **Gradle JVM must be JDK 21**; do not let its bundled newer JVM override the project's Gradle runtime.
 
 `./scripts/doctor.sh` checks the local toolchain. `scripts/common.sh` discovers the standard macOS SDK locations. Build scripts operate relative to the repository root and do not require personal absolute paths or signing credentials in source.
 
@@ -48,3 +48,5 @@ CI configuration can be checked locally, but server scheduling, runner tags, art
 Run the publication guard before staging and again after staging. Review `git diff --cached --stat` and `git diff --cached` before a push. `.gitignore` does not untrack files that were committed previously: remove such files from the index deliberately without deleting local copies, then rerun the guard. Do not force-add private investigations, credentials, captures, generated binaries, or device reports.
 
 The guard checks an explicit product path allowlist, generated/credential extensions, file sizes, symlinks, and common credential signatures. It reports paths without printing suspected secret content. It is a useful gate, not a complete secret scanner or a substitute for review.
+
+The Android build uses Gradle **9.8.2**, AGP **9.4.1**, and built-in Android Kotlin support. The Kotlin compiler/plugins remain pinned to **2.4.21**. Compile SDK is **37**; target SDK remains **36**. Both the app and standalone clipboard probe apply the reviewed dependency patch policy in `apps/android/gradle/dependency-security.settings.gradle.kts`. Run `python3 scripts/test-dependency-policy.py` to verify real dependency resolution, version alignment, and preservation of newer versions.

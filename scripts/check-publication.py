@@ -19,7 +19,7 @@ SCRIPTS = {
     "test-ble-pairing.py", "test-clipboard.py", "measure-bridge-resources.py",
     "check-publication.py", "format-code.py", "check.sh", "setup-android-ci.sh", "generate-brand-assets.swift",
     "package-release.py",
-    "install-security-tools.py", "check-security.py",
+    "install-security-tools.py", "check-security.py", "test-dependency-policy.py",
 }
 GENERATED = {".git", ".tooling", ".artifacts", ".gradle", ".kotlin", "build", ".build", ".swiftpm", "DerivedData", "__pycache__", "xcuserdata"}
 FORBIDDEN_SUFFIXES = {".p12", ".pfx", ".key", ".pem", ".keystore", ".jks", ".mobileprovision", ".provisionprofile", ".pcap", ".pcapng", ".ips", ".log", ".apk", ".aab", ".zip", ".db"}

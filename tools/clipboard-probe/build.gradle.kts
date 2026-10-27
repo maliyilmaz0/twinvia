@@ -1,8 +1,8 @@
-plugins { id("com.android.application") version "8.13.2" }
+plugins { id("com.android.application") version "9.4.1" }
 
 android {
     namespace = "dev.androfest.clipboardprobe"
-    compileSdk = 36
+    compileSdk = 37
     defaultConfig {
         applicationId = "dev.androfest.clipboardprobe"
         minSdk = 33

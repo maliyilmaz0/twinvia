@@ -11,7 +11,7 @@ work = ROOT / '.tooling/clipboard/classes'
 work.mkdir(parents=True, exist_ok=True)
 for old in work.rglob('*.class'):
     old.unlink()
-platform = sdk / 'platforms/android-36/android.jar'
+platform = sdk / 'platforms/android-37.0/android.jar'
 source = ROOT / 'tools/clipboard-helper/src/dev/androfest/clipboard/ClipboardAgent.java'
 subprocess.run([str(java/'bin/javac'), '--release', '17', '-cp', str(platform), '-d', str(work), str(source)], check=True)
 output = ROOT / '.artifacts/android/TwinviaClipboardHelper.jar'
