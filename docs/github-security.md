@@ -17,7 +17,7 @@ Configuration reviewed **27 October 2026** for `maliyilmaz0/twinvia`. Public vis
 | Release immutability | Enabled for future releases. The original v0.9.0 release is not claimed to become retroactively immutable. |
 | Ownership and intake | CODEOWNERS routes review to `@maliyilmaz0`; pull-request and sanitized bug/feature templates are present; private vulnerability reporting provides a confidential channel |
 | Main branch | Pull requests, resolved conversations, linear history and up-to-date successful `publication`, `security-quality`, `android`, `macos` and `dependency-review` checks are required, including for administrators; force pushes/deletion are blocked. No impossible independent self-approval requirement is imposed on the single maintainer. |
-| CodeQL merge gate | CodeQL analysis errors and medium-or-higher security findings block merging into `main`; no bypass actors. |
+| CodeQL merge gate | All four language jobs are required individually. CodeQL analysis errors and medium-or-higher security findings block merging into `main`; no bypass actors. |
 | Version tags | Updates/deletion of `v*` tags are blocked; creation remains available to the authorized publisher. |
 | Native secret protection | GitHub secret scanning and push protection are enabled for the public repository; scan results remain separate from these enablement settings. |
 
@@ -97,3 +97,5 @@ References: [private CodeQL eligibility](https://docs.github.com/en/code-securit
 6. Finish stable Android release-key handling and Developer ID/hardened/notarized Mac distribution. Current developer-preview signing limitations remain unchanged.
 
 Account-wide 2FA/passkeys, organization membership and paid billing changes are owner decisions outside this repository setup; this work does not modify them.
+
+Swift analysis pins the supported Xcode 16.4 toolchain on macOS 15. Only the native C/C++/Objective-C NearbyCoreAdapter dependency target is prepared before extraction; Swift app, shared-protocol, Google Nearby Swift and BLE-helper sources compile after CodeQL initialization. This avoids tracing unrelated native dependency preparation without treating cached Swift compilation as scan evidence.
