@@ -68,9 +68,11 @@ jobs:
         if: matrix.language == 'swift'
         run: |
           python3 scripts/prepare-nearby-sdk.py
-          # This target contains C/C++/Objective-C only. Every Swift product
-          # source is still compiled after CodeQL initialization below.
-          xcrun swift build --package-path apps/macos/BluetoothBridge --target NearbyCoreAdapter --jobs 6
+          # --target builds only that target, so prepare each native dependency.
+          # No Swift product target is built until CodeQL initializes below.
+          for target in openssl_grpc abseil protobuf-utf8 protobuf ukey2 json smhasher NearbyCommon NearbyCoreAdapter; do
+            xcrun swift build --package-path apps/macos/BluetoothBridge --target "$target" --jobs 6
+          done
       - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
         with:
           languages: ${{ matrix.language }}
