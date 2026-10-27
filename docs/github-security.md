@@ -78,6 +78,8 @@ The remediation upgrades the wrapper to Gradle 9.8.2 (distribution and wrapper c
 | jose4j | 0.9.7 |
 | JDOM | 2.0.6.1 |
 | Commons Compress | 1.27.1 |
+| Commons Lang | 3.18.0 |
+| Apache HttpClient | 4.5.14 |
 | Protobuf Java / Kotlin | 3.25.5 |
 | Netty modules, if introduced by tooling | 4.1.137.Final, aligned |
 
@@ -99,3 +101,5 @@ References: [private CodeQL eligibility](https://docs.github.com/en/code-securit
 Account-wide 2FA/passkeys, organization membership and paid billing changes are owner decisions outside this repository setup; this work does not modify them.
 
 Swift analysis pins the supported Xcode 16.4 toolchain on macOS 15. Intel/Rosetta preparation matches the current CodeQL tracer architecture; the ordinary shipping build retains its native host architecture. The nine native C/C++/Objective-C dependency targets (BoringSSL, Abseil, Protobuf, Ukey2, JSON, smhasher and Nearby native adapters) are prepared before extraction; Swift app, shared-protocol, Google Nearby Swift and BLE-helper sources compile after CodeQL initialization. This avoids tracing unrelated native dependency preparation without treating cached Swift compilation as scan evidence.
+
+The first refreshed trusted snapshot after remediation marked all original 52 advisories fixed and revealed two additional medium-severity transitive advisories: Commons Lang below 3.18.0 and Apache HttpClient below 4.5.13. Their patch floors are included above and in the real-resolution regression fixture. The cold Intel Swift scan completed in about 43 minutes, so its timeout is 60 minutes to allow full analysis without a fragile near-deadline finish. These are observations from 27 October 2026; current alerts remain authoritative.

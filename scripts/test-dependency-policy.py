@@ -16,6 +16,8 @@ buildscript {
     dependencies {
         classpath("org.bouncycastle:bcprov-jdk18on:1.79")
         classpath("org.jdom:jdom2:2.0.6")
+        classpath("org.apache.commons:commons-lang3:3.16.0")
+        classpath("org.apache.httpcomponents:httpclient:4.5.6")
         classpath("org.apache.commons:commons-compress:1.28.0")
     }
 }
@@ -32,6 +34,8 @@ tasks.register("testSecurityPolicy") {
             .resolvedConfiguration.resolvedArtifacts.map { it.moduleVersion.id }
         check(buildIds.any { it.name == "bcprov-jdk18on" && it.version == "1.86" })
         check(buildIds.any { it.name == "jdom2" && it.version == "2.0.6.1" })
+        check(buildIds.any { it.name == "commons-lang3" && it.version == "3.18.0" })
+        check(buildIds.any { it.name == "httpclient" && it.version == "4.5.14" })
         // A newer compatible request must never be downgraded to the floor.
         check(buildIds.any { it.name == "commons-compress" && it.version == "1.28.0" })
         val netty = probe.resolvedConfiguration.resolvedArtifacts.map { it.moduleVersion.id }

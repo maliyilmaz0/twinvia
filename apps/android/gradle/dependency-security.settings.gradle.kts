@@ -10,6 +10,8 @@ val securityMinimums =
         "org.bitbucket.b_c:jose4j" to "0.9.7",
         "org.jdom:jdom2" to "2.0.6.1",
         "org.apache.commons:commons-compress" to "1.27.1",
+        "org.apache.commons:commons-lang3" to "3.18.0",
+        "org.apache.httpcomponents:httpclient" to "4.5.14",
         "com.google.protobuf:protobuf-java" to "3.25.5",
         "com.google.protobuf:protobuf-kotlin" to "3.25.5",
     )
