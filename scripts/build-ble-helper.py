@@ -12,6 +12,10 @@ package = root/'apps/macos/BluetoothBridge'
 subprocess.run(['xcrun', 'swift', 'build','--package-path',str(package),
                 '--product','TwinviaBleBridge','--jobs','6'],check=True)
 app = root/'.artifacts/bluetooth/TwinviaBluetooth.app'
+# Code signing makes bundled resources read-only. Recreate the build output so
+# subsequent builds can copy notices and the executable without permission errors.
+if app.exists():
+    shutil.rmtree(app)
 (app/'Contents/MacOS').mkdir(parents=True,exist_ok=True)
 shutil.copy2(package/'.build/debug/TwinviaBleBridge',app/'Contents/MacOS/TwinviaBleBridge')
 notices = app/'Contents/Resources/ThirdPartyNotices'
