@@ -28,6 +28,8 @@ python3 scripts/test-clipboard.py --serial DEVICE_SERIAL --image
 
 The separate clipboard-probe package checks actual copy/paste, Unicode, lack of echo loops, and PNG integrity. The script keeps original Mac clipboard formats in RAM, restoring them only if no new user copy replaced the fixture. Test counters/results are local ignored artifacts. The optional Android clipboard helper must already be activated.
 
+For the APK-only Mac-to-phone path, stop the optional helper and run `python3 scripts/test-clipboard.py --serial DEVICE_SERIAL --image --without-helper`. The phone must be unlocked. This checks text and PNG from the Mac without claiming automatic Android-to-Mac reads.
+
 ### Fresh pairing isolation
 
 Build a separate debug application with `-Ptwinvia.pairingTest=true`, copy its APK to `.artifacts/ble-integration/Twinvia-pairingtest.apk`, and use `python3 scripts/test-ble-pairing.py`. Read the script preconditions first: it refuses an existing test identity instead of erasing state. It uses a separate Android package and Mac probe, bootstraps only the test QR over USB, and checks fresh TLS trust, a synthetic notification, and saved reconnection. For another run, choose a fresh `.pairingtest` suffix with `-Ptwinvia.pairingTestSuffix=.pairingtestUNIQUE` (lowercase letters/digits) and matching `--package`/`--apk` arguments. The harness validates APK identity before stopping the daily bridge, stops the competing daily Mac advertiser, and restores it during cleanup. Daily pairing stores must remain untouched. The package is left installed and stopped after testing.

@@ -14,12 +14,18 @@ val securityMinimums =
         "org.apache.httpcomponents:httpclient" to "4.5.14",
         "com.google.protobuf:protobuf-java" to "3.25.5",
         "com.google.protobuf:protobuf-kotlin" to "3.25.5",
+        "com.google.guava:guava" to "33.7.2",
     )
 val nettyMinimum = "4.1.137.Final"
 
 fun compareNumericVersions(left: String, right: String): Int {
-    val a = left.split('.').takeWhile { it.toIntOrNull() != null }.map(String::toInt)
-    val b = right.split('.').takeWhile { it.toIntOrNull() != null }.map(String::toInt)
+    fun numericParts(version: String) =
+        version
+            .split('.')
+            .takeWhile { it.firstOrNull()?.isDigit() == true }
+            .map { it.takeWhile(Char::isDigit).toInt() }
+    val a = numericParts(left)
+    val b = numericParts(right)
     require(a.isNotEmpty() && b.isNotEmpty()) {
         "Cannot compare dependency versions: $left / $right"
     }
@@ -43,7 +49,11 @@ fun ConfigurationContainer.applySecurityMinimums() {
                     !current.isNullOrEmpty() &&
                     compareNumericVersions(current, minimum) < 0
             ) {
-                useVersion(minimum)
+                val selected =
+                    if (requested.group == "com.google.guava" && requested.name == "guava") {
+                        minimum + if (current.endsWith("-android")) "-android" else "-jre"
+                    } else minimum
+                useVersion(selected)
                 because("Reviewed security patch floor; see docs/github-security.md")
             }
         }

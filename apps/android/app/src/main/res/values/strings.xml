@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Twinvia</string>
     <string name="notification_access_label">Twinvia notification bridge</string>
+    <string name="remote_accessibility_label">Twinvia screen control</string>
+    <string name="remote_accessibility_description">Take a screenshot or perform a touch only during a five-minute session started on this phone for the paired Mac.</string>
 </resources>

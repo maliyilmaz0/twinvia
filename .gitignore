@@ -87,4 +87,5 @@ __pycache__/
 !/docs/transports.md
 !/docs/roadmap.md
 !/docs/github-security.md
+!/docs/remote-control.md
 /design-system/

@@ -19,13 +19,24 @@ buildscript {
         classpath("org.apache.commons:commons-lang3:3.16.0")
         classpath("org.apache.httpcomponents:httpclient:4.5.6")
         classpath("org.apache.commons:commons-compress:1.28.0")
+        classpath("com.google.guava:guava:33.7.1-jre")
     }
 }
 repositories { mavenCentral() }
 val probe = configurations.create("securityProbe")
+val androidProbe = configurations.create("androidProbe") {
+    attributes {
+        attribute(org.gradle.api.attributes.Usage.USAGE_ATTRIBUTE,
+            objects.named(org.gradle.api.attributes.Usage::class.java, org.gradle.api.attributes.Usage.JAVA_RUNTIME))
+        attribute(org.gradle.api.attributes.java.TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
+            objects.named(org.gradle.api.attributes.java.TargetJvmEnvironment::class.java,
+                org.gradle.api.attributes.java.TargetJvmEnvironment.ANDROID))
+    }
+}
 dependencies {
     add(probe.name, "io.netty:netty-handler:4.1.110.Final")
     add(probe.name, "io.netty:netty-codec-http2:4.1.93.Final")
+    add(androidProbe.name, "com.google.guava:guava:33.7.1-android")
 }
 tasks.register("testSecurityPolicy") {
     dependsOn("verifyBuildDependencySecurity")
@@ -36,12 +47,17 @@ tasks.register("testSecurityPolicy") {
         check(buildIds.any { it.name == "jdom2" && it.version == "2.0.6.1" })
         check(buildIds.any { it.name == "commons-lang3" && it.version == "3.18.0" })
         check(buildIds.any { it.name == "httpclient" && it.version == "4.5.14" })
+        check(buildIds.any { it.name == "guava" && it.version == "33.7.2-jre" })
         // A newer compatible request must never be downgraded to the floor.
         check(buildIds.any { it.name == "commons-compress" && it.version == "1.28.0" })
         val netty = probe.resolvedConfiguration.resolvedArtifacts.map { it.moduleVersion.id }
             .filter { it.group == "io.netty" }
         check(netty.isNotEmpty())
         check(netty.all { it.version == "4.1.137.Final" })
+        check(androidProbe.resolvedConfiguration.resolvedArtifacts.any {
+            it.moduleVersion.id.group == "com.google.guava" &&
+                it.moduleVersion.id.version == "33.7.2-android"
+        })
         println("Dependency policy regression passed: plugin patches, Netty alignment, no downgrade.")
     }
 }

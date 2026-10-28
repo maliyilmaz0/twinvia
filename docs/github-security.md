@@ -81,9 +81,12 @@ The remediation upgrades the wrapper to Gradle 9.8.2 (distribution and wrapper c
 | Commons Lang | 3.18.0 |
 | Apache HttpClient | 4.5.14 |
 | Protobuf Java / Kotlin | 3.25.5 |
+| Guava (JRE / Android variant) | 33.7.2, preserving the requested variant |
 | Netty modules, if introduced by tooling | 4.1.137.Final, aligned |
 
 The policy covers plugin/buildscript and project configurations. It does not add these libraries to the APK, remove dependency inventory, dismiss advisories, or downgrade a newer selected version. `verifyBuildDependencySecurity` checks resolved plugin artifacts. `test-dependency-policy.py` resolves deliberately old real dependencies to verify crypto/XML patching, Netty alignment and preservation of a newer Commons Compress request. App/probe builds and CI test compatibility; future upstream plugin upgrades should reassess whether these floors are still needed.
+
+A new Guava advisory was reported on 28 October 2026 for the transitive build dependency `33.4.0-jre`. The policy now requires the [upstream patched release 33.7.2](https://github.com/google/guava/releases/tag/v33.7.2), preserving `-jre` or `-android` as requested. This source change requires a passing CI run, merge, refreshed dependency submission and live alert recheck before claiming the repository alert is closed.
 
 After merging, regenerate the trusted dependency snapshot and inspect the live alert list before claiming closure. The original 52 is a dated baseline, not a current zero-alert guarantee. Static code analysis and dependency advisory coverage remain distinct.
 

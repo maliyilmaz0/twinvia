@@ -17,6 +17,8 @@ ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--serial', required=True)
 parser.add_argument('--image', action='store_true')
+parser.add_argument('--without-helper', action='store_true',
+                    help='Verify Mac-to-phone clipboard without the optional shell helper')
 args = parser.parse_args()
 adb = [str(Path.home()/'Library/Android/sdk/platform-tools/adb'), '-s', args.serial]
 cache = Path.home()/'Library/Caches/dev.androfest.macos'
@@ -48,7 +50,8 @@ def paste_hash():
     return json.loads(run('shell', 'run-as', probe, 'cat', 'files/result.json').stdout)['sha256']
 
 run('install','-r',str(ROOT/'tools/clipboard-probe/build/outputs/apk/debug/TwinviaClipboardProbe-debug.apk'))
-wait(lambda: phone().get('helperReady') and phone().get('connected') and mac().get('connected'), 60)
+wait(lambda: phone().get('connected') and mac().get('connected') and
+     (args.without_helper or phone().get('helperReady')), 60)
 nonce = uuid.uuid4().hex
 first = 'twinvia-test-phone-'+nonce+'-şğ😀'
 second = 'twinvia-test-mac-'+nonce+'-üö😀'
@@ -67,10 +70,11 @@ board('configure',hashes=hashes+([image_hash] if args.image else []))
 report = {}
 try:
     p0, m0 = phone(), mac()
-    activity('copy', first)
-    wait(lambda: board('matches',sha256=hashes[0])['matches'])
-    wait(lambda: mac()['applied']>m0['applied'])
-    report['phoneCopyWhileBridgeBackgroundToMac'] = True
+    if not args.without_helper:
+        activity('copy', first)
+        wait(lambda: board('matches',sha256=hashes[0])['matches'])
+        wait(lambda: mac()['applied']>m0['applied'])
+        report['phoneCopyWhileBridgeBackgroundToMac'] = True
     p1, m1 = phone(), mac()
     board('setText',text=second)
     wait(lambda: phone()['applied']>p1['applied'])
@@ -83,7 +87,9 @@ try:
     assert p3['sent']==p2['sent'] and m3['sent']==m2['sent'], 'Clipboard echo loop'
     report['noEchoLoop'] = True
     report['unicodePreserved'] = True
-    report['phoneHelperUid'] = 'shell (2000); normal application UID unchanged'
+    report['phoneHelperReady'] = p3['helperReady']
+    if not args.without_helper:
+        report['phoneHelperUid'] = 'shell (2000); normal application UID unchanged'
     report['transport'] = 'existing authenticated bridge; no adb forwarding'
     report['phoneCounters'] = p3
     report['macCounters'] = m3

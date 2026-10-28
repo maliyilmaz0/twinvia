@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class BridgeRepository(
-    context: Context,
+    private val context: Context,
     private val identity: DeviceIdentity,
     private val notifications: NotificationRepository,
 ) {
@@ -100,7 +100,15 @@ class BridgeRepository(
         dev.androfest.android.features.calls.CallAudioRelay(context.applicationContext, scope)
     private val phoneData = PhoneDataProvider(context.applicationContext, files)
     private val commandProcessor =
-        CommandProcessor(DeviceCommandHandler(handoff, callAudio, phoneData, features))
+        CommandProcessor(
+            DeviceCommandHandler(
+                handoff,
+                callAudio,
+                phoneData,
+                features,
+                context.applicationContext,
+            )
+        )
 
     init {
         scope.launch {
@@ -225,6 +233,7 @@ class BridgeRepository(
             active.getAndSet(null)?.close()
             _connected.value = false
             features.clipboard.setConnected(false)
+            dev.androfest.android.features.remote.RemoteControlSession.stop(context)
             handoff.setConnected(false)
             saved.set(null)
             store.clear()
@@ -246,6 +255,7 @@ class BridgeRepository(
                 _connected.value = false
                 callAudio.stop()
                 features.clipboard.setConnected(false)
+                dev.androfest.android.features.remote.RemoteControlSession.stop(context)
                 handoff.setConnected(false)
                 _status.value = "Not paired with a Mac"
             }
@@ -348,6 +358,7 @@ class BridgeRepository(
                                             "clipboard.image.receive",
                                             "call.handoff",
                                             "phone.browse",
+                                            "remote.screen",
                                         )
                                 ),
                         )
@@ -417,7 +428,7 @@ class BridgeRepository(
                                                 applied.isSuccess,
                                                 if (applied.isSuccess) "Image copied to clipboard"
                                                 else
-                                                    "Could not apply image: check clipboard helper and unlock the phone",
+                                                    "Could not apply image: unlock the phone and check clipboard sharing",
                                             ),
                                         )
                                     ),
@@ -478,6 +489,7 @@ class BridgeRepository(
                 _connected.value = false
                 callAudio.stop()
                 features.clipboard.setConnected(false)
+                dev.androfest.android.features.remote.RemoteControlSession.stop(context)
                 handoff.setConnected(false)
                 _peerCapabilities.value = emptyList()
                 files.disconnected()

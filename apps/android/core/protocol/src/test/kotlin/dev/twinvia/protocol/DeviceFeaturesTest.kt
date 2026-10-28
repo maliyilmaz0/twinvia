@@ -97,4 +97,36 @@ class DeviceFeaturesTest {
             PhoneCallState("active", id, "bad").validate()
         }
     }
+
+    @Test
+    fun `remote actions reject out of range touches and invalid screen metadata`() {
+        DeviceCommand(DeviceAction.REMOTE_TAP, key = "0,10000").validate()
+        DeviceCommand(DeviceAction.REMOTE_SNAPSHOT).validate()
+        DeviceCommand(DeviceAction.REMOTE_SWIPE, key = "5000,100,5000,8000,300").validate()
+        DeviceCommand(DeviceAction.REMOTE_NOTIFICATIONS).validate()
+        for (key in listOf("-1,10", "10001,0", "a,1", "0,0,0", "1.5,2")) {
+            assertThrows(IllegalArgumentException::class.java) {
+                DeviceCommand(DeviceAction.REMOTE_TAP, key = key).validate()
+            }
+        }
+        for (key in
+            listOf(
+                "0,0,0,0,300",
+                "0,0,10001,0,300",
+                "0,0,200,0,79",
+                "0,0,200,0,1501",
+                "0,0,200,0",
+            )) {
+            assertThrows(IllegalArgumentException::class.java) {
+                DeviceCommand(DeviceAction.REMOTE_SWIPE, key = key).validate()
+            }
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            WireCodec.message(
+                MessageType.COMMAND_RESULT,
+                id,
+                CommandResult(id, true, "Screen", screen = RemoteScreen("abcd", 641, 10)),
+            )
+        }
+    }
 }

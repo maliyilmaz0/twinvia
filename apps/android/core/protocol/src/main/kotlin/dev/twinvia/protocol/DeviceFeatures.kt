@@ -21,6 +21,12 @@ enum class DeviceAction {
     @kotlinx.serialization.SerialName("media.playPause") MEDIA_PLAY_PAUSE,
     @kotlinx.serialization.SerialName("media.next") MEDIA_NEXT,
     @kotlinx.serialization.SerialName("media.previous") MEDIA_PREVIOUS,
+    @kotlinx.serialization.SerialName("remote.snapshot") REMOTE_SNAPSHOT,
+    @kotlinx.serialization.SerialName("remote.tap") REMOTE_TAP,
+    @kotlinx.serialization.SerialName("remote.swipe") REMOTE_SWIPE,
+    @kotlinx.serialization.SerialName("remote.back") REMOTE_BACK,
+    @kotlinx.serialization.SerialName("remote.home") REMOTE_HOME,
+    @kotlinx.serialization.SerialName("remote.notifications") REMOTE_NOTIFICATIONS,
 }
 
 @Serializable
@@ -77,6 +83,26 @@ data class DeviceCommand(
                     require(!text.isNullOrBlank() && text.length <= 4096)
                 else require(text == null)
             }
+            DeviceAction.REMOTE_TAP,
+            DeviceAction.REMOTE_SWIPE -> {
+                require(text == null && actionToken == null && key != null)
+                val values = key.split(',')
+                require(values.size == if (action == DeviceAction.REMOTE_TAP) 2 else 5)
+                require(values.all { it.matches(Regex("(?:0|[1-9][0-9]{0,4})")) })
+                val numbers = values.map(String::toInt)
+                require(
+                    numbers.take(if (action == DeviceAction.REMOTE_TAP) 2 else 4).all {
+                        it in 0..10_000
+                    }
+                )
+                if (action == DeviceAction.REMOTE_SWIPE) {
+                    require(numbers[4] in 80..1_500)
+                    require(
+                        kotlin.math.abs(numbers[0] - numbers[2]) +
+                            kotlin.math.abs(numbers[1] - numbers[3]) >= 150
+                    )
+                }
+            }
             else -> require(text == null && key == null && actionToken == null)
         }
     }
@@ -93,7 +119,21 @@ data class CommandResult(
     val success: Boolean,
     val message: String,
     val data: PhonePage? = null,
+    val screen: RemoteScreen? = null,
 )
+
+@Serializable
+data class RemoteScreen(val jpegBase64: String, val width: Int, val height: Int) {
+    fun validate() {
+        require(width in 1..640 && height in 1..640)
+        require(jpegBase64.length in 1..180_000 && jpegBase64.length % 4 == 0)
+        require(
+            jpegBase64.all {
+                it.isLetterOrDigit() && it.code < 128 || it == '+' || it == '/' || it == '='
+            }
+        )
+    }
+}
 
 @Serializable
 data class DeviceStatus(

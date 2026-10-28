@@ -18,6 +18,12 @@ public enum DeviceAction: String, Codable, Sendable, CaseIterable {
     case mediaPlayPause = "media.playPause"
     case mediaNext = "media.next"
     case mediaPrevious = "media.previous"
+    case remoteSnapshot = "remote.snapshot"
+    case remoteTap = "remote.tap"
+    case remoteSwipe = "remote.swipe"
+    case remoteBack = "remote.back"
+    case remoteHome = "remote.home"
+    case remoteNotifications = "remote.notifications"
 }
 
 public struct DeviceCommand: WirePayload {
@@ -67,6 +73,23 @@ public struct DeviceCommand: WirePayload {
             } else if text != nil {
                 throw ProtocolError.invalidPayload
             }
+        case .remoteTap, .remoteSwipe:
+            guard text == nil, actionToken == nil, let key else { throw ProtocolError.invalidPayload }
+            let parts = key.split(separator: ",", omittingEmptySubsequences: false)
+            guard parts.count == (action == .remoteTap ? 2 : 5),
+                parts.allSatisfy({ part in
+                    !part.isEmpty && part.count <= 5 && part.allSatisfy({ $0.isASCII && $0.isNumber })
+                })
+            else { throw ProtocolError.invalidPayload }
+            let values = parts.compactMap { Int($0) }
+            guard values.count == parts.count,
+                values.prefix(action == .remoteTap ? 2 : 4).allSatisfy({ (0...10_000).contains($0) })
+            else { throw ProtocolError.invalidPayload }
+            if action == .remoteSwipe {
+                guard (80...1_500).contains(values[4]),
+                    abs(values[0] - values[2]) + abs(values[1] - values[3]) >= 150
+                else { throw ProtocolError.invalidPayload }
+            }
         default:
             guard text == nil, key == nil, actionToken == nil else { throw ProtocolError.invalidPayload }
         }
@@ -79,13 +102,36 @@ public struct CommandResult: WirePayload {
     public let success: Bool
     public let message: String
     public let data: PhonePage?
-    public init(requestId: String, success: Bool, message: String, data: PhonePage? = nil) {
+    public let screen: RemoteScreen?
+    public init(
+        requestId: String, success: Bool, message: String, data: PhonePage? = nil,
+        screen: RemoteScreen? = nil
+    ) {
         self.requestId = requestId; self.success = success; self.message = message; self.data = data
+        self.screen = screen
     }
     public func validate() throws {
-        guard UUID(uuidString: requestId) != nil, !message.isEmpty, message.utf16.count <= 256, success || data == nil
+        guard UUID(uuidString: requestId) != nil, !message.isEmpty, message.utf16.count <= 256,
+            success || (data == nil && screen == nil)
         else { throw ProtocolError.invalidPayload }
         try data?.validate()
+        try screen?.validate()
+    }
+}
+
+public struct RemoteScreen: Codable, Sendable {
+    public let jpegBase64: String
+    public let width: Int
+    public let height: Int
+    public init(jpegBase64: String, width: Int, height: Int) {
+        self.jpegBase64 = jpegBase64; self.width = width; self.height = height
+    }
+    public func validate() throws {
+        guard (1...640).contains(width), (1...640).contains(height),
+            (1...180_000).contains(jpegBase64.count), jpegBase64.count.isMultiple(of: 4),
+            let data = Data(base64Encoded: jpegBase64), data.count <= 135_000,
+            data.starts(with: [0xFF, 0xD8, 0xFF])
+        else { throw ProtocolError.invalidPayload }
     }
 }
 

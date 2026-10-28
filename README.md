@@ -14,21 +14,22 @@ See the [transport comparison and requirements](docs/transports.md) for why this
 | --- | --- |
 | Pairing | Scan a five-minute QR invitation; save trust and reconnect automatically. |
 | Notifications | Native macOS notifications, Android app-icon attachments, per-app filters, duplicate suppression, and supported reply/dismiss actions. The sender remains Twinvia. |
-| Clipboard | Automatic text/URL synchronization in both directions; Mac PNG/TIFF screenshots to the Android image clipboard. Android background access requires the optional USB-activated helper described below. |
+| Clipboard | Automatic Mac-to-Android text/URL and PNG/TIFF screenshot transfer from the ordinary APK. Android-to-Mac copies from other apps use the optional USB-activated helper, or an explicit Android Share action. |
 | Files | Approved, SHA-256-verified transfers in both directions; progress and cancellation. One transfer at a time, no resume or queue. |
 | Phone data | Paginated contacts, call history, and shared-storage browsing with separate Android permissions. Private application storage is excluded. |
 | Controls | Battery/charging/lock status, media controls, and a time-limited phone ringer. |
+| Screen control | Current source builds include on-demand screen images, tap/swipe, Back/Home and notification-panel controls. Viewing and input require separate phone-side approvals for a five-minute session. BLE is not a live-video transport. This is not in the published 0.9.0 archive. |
 | Calls | Call notifications, supported answer/end controls, and separate Bluetooth HFP dialing. Reliable Mac cellular-call audio is not provided by this BLE build. |
 
 BLE prioritizes small messages over throughput. In one device trial, a 116,608-byte PNG took about 18 seconds; a 64 KiB file completed an integrity-checked round trip. The protocol's 2 GiB ceiling is a validation limit, **not** a practical large-file speed claim. Reconnection can take tens of seconds after radio failure. Do not use this preview as a critical calling service.
 
-Not implemented: Apple Messages integration, registration of an Android line in Apple's Phone app, SMS history management, Android-to-Mac image clipboard, remote screen control, or production PCM audio over BLE.
+Not implemented: Apple Messages integration, registration of an Android line in Apple's Phone app, SMS history management, Android-to-Mac image clipboard, live screen streaming, keyboard input, or production PCM audio over BLE.
 
 ## Upcoming features
 
-The next priorities are easier clipboard setup and recovery, stable signed installers, a unified remote phone-management interface, file-transfer queues/resume, and richer phone-data navigation. Later work includes Android-to-Mac image clipboard, optional multi-device support, and a consent-based remote-screen/control prototype on a suitable faster transport.
+The next priorities are real-device validation of the new consent-based screen workspace, easier clipboard setup and recovery, stable signed installers, file-transfer queues/resume, and richer phone-data navigation. Later work includes Android-to-Mac image clipboard, optional multi-device support, and live screen streaming on a suitable faster transport.
 
-Screen control, reliable cellular-call audio, and public Mac Wi-Fi Aware support still need platform feasibility work. They are not available in the current release or guaranteed for the next version. Read the [prioritized roadmap and completion criteria](docs/roadmap.md), [clipboard options](docs/clipboard-sync.md#improvement-options), and [transport requirements](docs/transports.md).
+The screen prototype is in source builds, not the current release. Reliable cellular-call audio and public Mac Wi-Fi Aware support still need platform feasibility work. Read the [screen-control setup and limits](docs/remote-control.md), [prioritized roadmap](docs/roadmap.md), [clipboard options](docs/clipboard-sync.md#improvement-options), and [transport requirements](docs/transports.md).
 
 ## Requirements
 
@@ -84,7 +85,7 @@ For phone-data browsing, grant contacts and call-log permission separately. Shar
 
 ### Automatic clipboard
 
-Android restricts background clipboard access. The optional helper runs under the ADB shell identity and connects only to the app's authenticated loopback endpoint. It does not root the phone or change the app's UID.
+Mac-to-phone clipboard writes run in the APK and need no ADB helper. Android restricts background clipboard reads from other apps. For automatic phone-to-Mac copying, the optional helper runs under the ADB shell identity and connects only to the app's authenticated loopback endpoint. It does not root the phone or change the app's UID. Without the helper, select text in an Android app and use Share → Twinvia → Send shared text to Mac.
 
 With your unlocked phone connected over USB and USB debugging authorized:
 
@@ -100,7 +101,7 @@ Then copy and paste normally. USB is used for activation, not as the bridge data
 | --- | --- |
 | No connection | Bluetooth and Nearby Devices permissions; Google Play services; both apps running. Allow time for discovery/backoff, then use the retry control. |
 | Keychain prompt on Mac | Use the visible pairing-key access action and approve the system dialog. A denied read preserves existing trust instead of silently replacing it. |
-| Clipboard does not move | Unlock the phone; check synchronization is enabled and the helper is ready. Reactivate after phone reboot. |
+| Clipboard does not move | Unlock the phone and check synchronization is enabled. For automatic phone-to-Mac copying, also check the optional helper; without it use Android Share → Twinvia. |
 | Image/file transfer is slow | BLE bandwidth is limited. Keep devices close and wait for acknowledgement; large transfers are experimental. |
 | Notification missing | Grant both notification permissions, check app filters and persistent-notification filtering, and check macOS Focus settings. |
 | Calls still use the phone | Data pairing does not configure HFP audio. Reliable audio relay is outside this build's supported features. |

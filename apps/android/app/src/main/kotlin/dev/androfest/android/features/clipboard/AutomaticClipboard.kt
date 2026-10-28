@@ -1,6 +1,9 @@
 package dev.androfest.android.features.clipboard
 
 import android.app.KeyguardManager
+import android.content.ClipData
+import android.content.ClipDescription
+import android.content.ClipboardManager
 import android.content.Context
 import android.os.Process
 import java.io.DataInputStream
@@ -12,7 +15,6 @@ import java.net.Socket
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlinx.coroutines.*
@@ -36,7 +38,7 @@ class AutomaticClipboard(private val context: Context, private val scope: Corout
     @Volatile private var peer: Socket? = null
     @Volatile private var output: DataOutputStream? = null
     private val writeLock = Any()
-    private val pending = ConcurrentHashMap<String, CompletableDeferred<Unit>>()
+    @Volatile private var lastAppliedText: String? = null
     private var configured: Boolean? = null
     @Volatile private var changesSent = 0
     @Volatile private var changesApplied = 0
@@ -123,12 +125,15 @@ class AutomaticClipboard(private val context: Context, private val scope: Corout
                                 "changed" -> {
                                     val text = message.getString("text")
                                     require(text.isNotEmpty() && text.length <= 16_384)
-                                    if (allowed()) {
+                                    if (text == lastAppliedText) {
+                                        lastAppliedText = null
+                                    } else if (allowed()) {
                                         changesSent++
                                         onChanged?.invoke(text)
                                     }
                                 }
-                                "applied" -> pending.remove(message.getString("id"))?.complete(Unit)
+                                "applied" ->
+                                    Unit // Older helpers may acknowledge an in-flight write.
                                 else -> error("Unknown helper message")
                             }
                         }
@@ -136,18 +141,13 @@ class AutomaticClipboard(private val context: Context, private val scope: Corout
                         if (error is CancellationException) throw error
                     } finally {
                         _ready.value = false
+                        lastAppliedText = null
                         configured = null
                         synchronized(writeLock) {
                             output = null
                             peer = null
                         }
                         runCatching { socket.close() }
-                        pending.values.forEach {
-                            it.completeExceptionally(
-                                IllegalStateException("Clipboard helper stopped")
-                            )
-                        }
-                        pending.clear()
                         _status.value = "Waiting for background clipboard helper"
                     }
                 }
@@ -190,7 +190,7 @@ class AutomaticClipboard(private val context: Context, private val scope: Corout
                 peer?.let { runCatching { it.close() } }
                 peer = null
             }
-            _status.value = "Reconnecting clipboard helper"
+            _status.value = "Reconnecting clipboard helper for phone-to-Mac copies"
         }
         scope.launch(Dispatchers.IO) { configure() }
     }
@@ -224,9 +224,9 @@ class AutomaticClipboard(private val context: Context, private val scope: Corout
         _status.value =
             when {
                 !_enabled.value -> "Automatic clipboard sync disabled"
-                !_ready.value -> "Waiting for background clipboard helper"
                 !connected -> "Clipboard sync waiting for Mac"
                 !allow -> "Phone locked · Clipboard sync paused"
+                !_ready.value -> "Mac-to-phone clipboard ready · Phone-to-Mac needs helper or Share"
                 else -> "Automatic clipboard sync enabled"
             }
         if (!_ready.value || configured == allow) return
@@ -267,28 +267,25 @@ class AutomaticClipboard(private val context: Context, private val scope: Corout
 
     suspend fun apply(text: String) {
         check(allowed()) { "Clipboard sync disabled or phone locked" }
-        check(_ready.value) { "Activate background clipboard helper" }
         require(text.isNotEmpty() && text.length <= 16_384)
-        val id = UUID.randomUUID().toString()
-        val result = CompletableDeferred<Unit>()
-        check(pending.size < 16)
-        pending[id] = result
-        try {
-            withContext(Dispatchers.IO) {
-                configure()
-                send(JSONObject().put("kind", "set").put("id", id).put("text", text))
+        withContext(Dispatchers.Main.immediate) {
+            check(allowed())
+            lastAppliedText = if (_ready.value) text else null
+            try {
+                context
+                    .getSystemService(ClipboardManager::class.java)
+                    .setPrimaryClip(ClipData.newPlainText("Twinvia", text))
+                changesApplied++
+            } catch (failure: Exception) {
+                lastAppliedText = null
+                throw failure
             }
-            withTimeout(3000) { result.await() }
-            changesApplied++
-        } finally {
-            pending.remove(id)
         }
     }
 
     suspend fun applyImage(png: ByteArray) =
         withContext(Dispatchers.IO) {
             check(allowed()) { "Clipboard sync disabled or phone locked" }
-            check(_ready.value) { "Activate background clipboard helper" }
             require(png.size in 1..dev.twinvia.protocol.ClipboardImageChunk.MAX_IMAGE_BYTES)
             require(png.take(8) == byteArrayOf(-119, 80, 78, 71, 13, 10, 26, 10).toList())
             val bounds =
@@ -311,20 +308,17 @@ class AutomaticClipboard(private val context: Context, private val scope: Corout
                     "${context.packageName}.clipboard",
                     file,
                 )
-            context.grantUriPermission(
-                "com.android.shell",
-                uri,
-                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION,
-            )
-            val result = CompletableDeferred<Unit>()
-            check(pending.size < 16)
-            pending[id] = result
             try {
-                configure()
-                check(allowed())
-                send(JSONObject().put("kind", "setImage").put("id", id).put("uri", uri.toString()))
-                withTimeout(3000) { result.await() }
-                changesApplied++
+                withContext(Dispatchers.Main.immediate) {
+                    check(allowed())
+                    val clip =
+                        ClipData(
+                            ClipDescription("Twinvia image", arrayOf("image/png")),
+                            ClipData.Item(uri),
+                        )
+                    context.getSystemService(ClipboardManager::class.java).setPrimaryClip(clip)
+                    changesApplied++
+                }
                 // Keep the current and two previous images so paste consumers can finish reads.
                 directory
                     .listFiles()
@@ -332,27 +326,11 @@ class AutomaticClipboard(private val context: Context, private val scope: Corout
                     ?.sortedByDescending { it.lastModified() }
                     ?.drop(2)
                     ?.forEach {
-                        val old =
-                            androidx.core.content.FileProvider.getUriForFile(
-                                context,
-                                "${context.packageName}.clipboard",
-                                it,
-                            )
-                        context.revokeUriPermission(
-                            old,
-                            android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                        )
                         it.delete()
                     }
             } catch (failure: Exception) {
-                context.revokeUriPermission(
-                    uri,
-                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                )
                 file.delete()
                 throw failure
-            } finally {
-                pending.remove(id)
             }
         }
 

@@ -8,6 +8,7 @@ final class AppNavigationTests: XCTestCase {
             XCTAssertEqual(AppNavigation(url: try XCTUnwrap(URL(string: "\(scheme)://calls"))), .calls)
             XCTAssertEqual(AppNavigation(url: try XCTUnwrap(URL(string: "\(scheme)://contacts"))), .contacts)
             XCTAssertEqual(AppNavigation(url: try XCTUnwrap(URL(string: "\(scheme)://history"))), .history)
+            XCTAssertEqual(AppNavigation(url: try XCTUnwrap(URL(string: "\(scheme)://screen"))), .screen)
         }
     }
 

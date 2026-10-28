@@ -30,15 +30,15 @@ The existing app already shows phone status, media controls, contacts, call hist
 
 Completion requires reconnect-safe state, permission-revocation handling and command-specific availability. Closing the management window must leave the optional background bridge running; quitting must stop it cleanly.
 
-### Stage 2 — Phone screen viewing: exploratory, transport-gated
+### Stage 2 — Phone screen viewing: on-demand source prototype; live stream exploratory
 
-Prototype an explicitly started screen-sharing session with a persistent visible indicator, a phone-side stop control, and configurable quality/frame rate. Android's public `MediaProjection` path requires user consent per capture session; lock and revocation must end the session. Protected content may remain unavailable. See [Android media projection](https://developer.android.com/media/grow/media-projection).
+The source build now prototypes phone-approved, five-minute on-demand screenshots with a persistent notification and phone-side stop control. It uses Android's public AccessibilityService screenshot capability, with a separate approval for touch input. Lock, disconnect and service revocation end the session. Protected content may remain unavailable. Hardware latency and permission-state regression tests are still required. See [screen-control setup](remote-control.md).
 
-The BLE preview is not an acceptable basis for a usable live desktop stream. A suitable faster, authenticated transport must be implemented and measured first; an optional USB adapter is one candidate. Public Mac NAN support remains a separate [platform dependency](transports.md).
+The BLE preview is not an acceptable basis for a usable live desktop stream. A suitable faster, authenticated transport must be implemented and measured first; an optional USB adapter is one candidate. Android's public [MediaProjection](https://developer.android.com/media/grow/media-projection) path remains an option for live streaming and requires user consent per capture session. Public Mac NAN support remains a separate [platform dependency](transports.md).
 
-### Stage 3 — Remote input: exploratory, independently consented
+### Stage 3 — Remote input: basic source prototype; richer input exploratory
 
-Investigate touch, scrolling, text entry, Back/Home and other supported actions only within an explicitly authorized session. Android accessibility gesture APIs are a possible input adapter, not a clipboard-reading permission or automatic approval to control the device. See [AccessibilityService](https://developer.android.com/reference/android/accessibilityservice/AccessibilityService).
+The source build adds tap, swipe, Back, Home and opening the notification panel after a separate phone-side control approval. Text entry and other actions remain exploratory. Android accessibility gesture APIs are the input adapter, not a clipboard-reading permission or automatic approval to control the device. See [AccessibilityService](https://developer.android.com/reference/android/accessibilityservice/AccessibilityService).
 
 Screen-view consent and input-control consent must remain separate. An unpaired peer, ended session, locked phone or revoked permission must reject input. Security dialogs and OS restrictions remain authoritative. No silent unlock, password collection, hidden unattended control or private application storage access is planned.
 

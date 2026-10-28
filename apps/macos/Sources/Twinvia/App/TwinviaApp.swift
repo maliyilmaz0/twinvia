@@ -65,7 +65,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #endif
         if let index = CommandLine.arguments.firstIndex(of: "--phone-section"), CommandLine.arguments.count > index + 1,
             let model = Self.model, let url = URL(string: "androfest://" + CommandLine.arguments[index + 1]),
-            ["contacts", "history", "files", "calls"].contains(url.host ?? "")
+            ["contacts", "history", "files", "calls", "screen"].contains(url.host ?? "")
         {
             model.handleURL(url)
             DashboardWindow.show(model: model)

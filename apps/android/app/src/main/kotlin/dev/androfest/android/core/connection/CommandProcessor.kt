@@ -66,5 +66,11 @@ class CommandProcessor(
                 DeviceAction.FILES_DOWNLOAD,
                 DeviceAction.CALL_AUDIO_START,
                 DeviceAction.CALL_AUDIO_STOP,
+                DeviceAction.REMOTE_SNAPSHOT,
+                DeviceAction.REMOTE_TAP,
+                DeviceAction.REMOTE_SWIPE,
+                DeviceAction.REMOTE_BACK,
+                DeviceAction.REMOTE_HOME,
+                DeviceAction.REMOTE_NOTIFICATIONS,
             )
 }

@@ -35,7 +35,7 @@ The relay forwards ciphertext without terminating TLS. Nearby-level connection a
 | Android `SessionAuthenticator` | Pure validation of pending/saved trust, protocol version, peer identity, shared secret, and capability bounds. |
 | Android `CommandProcessor` / `CommandHandler` | Pure validation, bounded duplicate-result history, and error isolation / injected platform effects. The single command consumer owns history. |
 | Android `DeviceCommandHandler` | Dispatches validated actions to OS adapters and rechecks session ownership across dispatcher changes. |
-| Android `features/*` | OS-specific clipboard, notifications, contacts, storage, media, calls, and Compose UI. |
+| Android `features/*` | OS-specific clipboard, notifications, contacts, storage, media, calls, remote-screen session, and Compose UI. |
 | Mac `App/` | Application lifecycle and composition of feature controllers. |
 | Mac `Connection/BridgeClient` | TLS/session orchestration and typed event delivery. Transport creation is injected through `PeerLink`. |
 | Mac `Connection/BridgeEvent` | Decodes valid envelopes into typed events. Unknown application events fail closed. |
@@ -61,13 +61,14 @@ Mac application state is MainActor-owned. File handles and hashing use their exi
 
 Android uses an IO supervisor scope, a bounded command channel (8), a bounded file channel (4), and a small bounded handshake admission pool. Only the current authenticated socket may dispatch queued work. Main-thread platform actions recheck session identity after switching dispatchers. Coroutine cancellation is propagated; malformed commands return bounded errors and do not terminate the command consumer.
 
-The command cache is capped at 128 entries. Read/list/download and audio-control commands bypass it so permissions and current state are checked again. Side-effect duplicates can reuse a completed result. Request timestamps are validated before cached results are returned. This cache is not an exactly-once guarantee across application restarts.
+The command cache is capped at 128 entries. Read/list/download, audio-control, and remote-screen commands bypass it so permissions and current state are checked again. Side-effect duplicates can reuse a completed result. Request timestamps are validated before cached results are returned. This cache is not an exactly-once guarantee across application restarts.
 
 ## Feature safety boundaries
 
 - File transfer requires receiver approval, limits chunks and total size, verifies SHA-256, and keeps incomplete output separate. Filenames and shared-storage paths are validated; private app storage is outside the browser.
-- Clipboard pauses on device lock/disconnect. Text echo suppression and image acknowledgements prevent loops and false completion. Image deadlines account for BLE transfer time.
+- Clipboard pauses on device lock/disconnect. Incoming Mac text/image writes use the ordinary Android ClipboardManager; the optional shell helper only reads phone copies made in other apps. Text echo suppression and image acknowledgements prevent loops and false completion. Image deadlines account for BLE transfer time.
+- Screen viewing requires a short phone-approved lease; touch control requires a second approval. Screenshot data stays in memory, is bounded in size, and is sent only to the authenticated peer. Lock, screen off, disconnect, permission revocation, and lease expiry end control. The screen adapter does not inspect the accessibility UI tree.
 - Notification receipt history and delivery state suppress unchanged snapshots and stale banners independently of wire-ID replay handling.
 - Calls use explicit tokenized actions. BLE does not advertise the experimental PCM audio capability.
 
-See [transport details](ble-transport.md), [testing](testing.md), and [development](development.md).
+See [transport details](ble-transport.md), [screen control](remote-control.md), [testing](testing.md), and [development](development.md).
