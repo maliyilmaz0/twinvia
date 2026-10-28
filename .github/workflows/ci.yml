@@ -64,7 +64,7 @@ jobs:
         run: python3 scripts/test-dependency-policy.py
       - name: Build standalone clipboard probe
         run: ./apps/android/gradlew -p tools/clipboard-probe verifyBuildDependencySecurity assembleDebug --console=plain
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: android-debug
@@ -107,12 +107,12 @@ jobs:
         run: |
           codesign --verify --deep --strict .artifacts/macos/Twinvia.app
           ditto -c -k --sequesterRsrc --keepParent .artifacts/macos/Twinvia.app .artifacts/Twinvia-macos.zip
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: macos-debug
           retention-days: 7
           path: .artifacts/Twinvia-macos.zip
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: swift-coverage
           retention-days: 7
