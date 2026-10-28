@@ -45,6 +45,13 @@ class DeviceFeatures(
                 DeviceAction.CALLS_LIST,
                 DeviceAction.FILES_LIST,
                 DeviceAction.FILES_DOWNLOAD -> error("Phone queries must run on the IO dispatcher.")
+                DeviceAction.REMOTE_SNAPSHOT,
+                DeviceAction.REMOTE_TAP,
+                DeviceAction.REMOTE_SWIPE,
+                DeviceAction.REMOTE_BACK,
+                DeviceAction.REMOTE_HOME,
+                DeviceAction.REMOTE_NOTIFICATIONS ->
+                    error("Screen control runs in the connection service.")
                 DeviceAction.CLIPBOARD_SET -> {
                     clipboard.apply(requireNotNull(command.text))
                     "Clipboard synced to phone."

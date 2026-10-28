@@ -29,11 +29,16 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.androfest.android.features.remote.RemoteAccessibilityService
+import dev.androfest.android.features.remote.RemoteControlSession
 
 @Composable
 fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, scanMac: () -> Unit) {
     var section by rememberSaveable { mutableIntStateOf(0) }
     var confirmForget by remember { mutableStateOf(false) }
+    var confirmRemote by remember { mutableStateOf(false) }
+    var confirmRemoteControl by remember { mutableStateOf(false) }
+    var remoteServiceReady by remember { mutableStateOf(false) }
     var showApplications by rememberSaveable { mutableStateOf(false) }
     val deviceScroll = rememberLazyListState()
     val sharingScroll = rememberLazyListState()
@@ -47,11 +52,13 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
                 hasAccess =
                     context.packageName in
                         NotificationManagerCompat.getEnabledListenerPackages(context)
+                remoteServiceReady = RemoteAccessibilityService.current != null
             }
         }
         lifecycle.lifecycle.addObserver(observer)
         hasAccess =
             context.packageName in NotificationManagerCompat.getEnabledListenerPackages(context)
+        remoteServiceReady = RemoteAccessibilityService.current != null
         onDispose { lifecycle.lifecycle.removeObserver(observer) }
     }
     val events by model.notifications.events.collectAsStateWithLifecycle()
@@ -72,6 +79,9 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
     val sharedText by model.sharedText.collectAsStateWithLifecycle()
     val clipboardEnabled by model.bridge.features.clipboard.enabled.collectAsStateWithLifecycle()
     val clipboardStatus by model.bridge.features.clipboard.status.collectAsStateWithLifecycle()
+    val clipboardHelperReady by model.bridge.features.clipboard.ready.collectAsStateWithLifecycle()
+    val remoteActive by RemoteControlSession.active.collectAsStateWithLifecycle()
+    val remoteControlEnabled by RemoteControlSession.control.collectAsStateWithLifecycle()
     val hideLocked by model.notifications.hideLocked.collectAsStateWithLifecycle()
     val testReply by model.notifications.testReply.collectAsStateWithLifecycle()
     val picker =
@@ -84,6 +94,62 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
         if (sharedText.isNotEmpty() || files.isNotEmpty()) section = 1
     }
     TwinviaTheme {
+        if (confirmRemote)
+            AlertDialog(
+                onDismissRequest = { confirmRemote = false },
+                title = { Text("Share your phone screen?") },
+                text = {
+                    Text(
+                        "For five minutes, your paired Mac can request screen images. The screen may show private information. Touch control requires a separate approval. A phone notification lets you stop at any time. The session ends if the connection drops or the phone locks."
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            confirmRemote = false
+                            runCatching { RemoteControlSession.start(context) }
+                                .onFailure {
+                                    model.showNotice(
+                                        it.message ?: "Could not start screen control."
+                                    )
+                                }
+                        }
+                    ) {
+                        Text("Start screen viewing")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { confirmRemote = false }) { Text("Cancel") }
+                },
+            )
+        if (confirmRemoteControl)
+            AlertDialog(
+                onDismissRequest = { confirmRemoteControl = false },
+                title = { Text("Allow Mac touch control?") },
+                text = {
+                    Text(
+                        "Your paired Mac can send taps, swipes, Back, Home and a command to open notifications while screen viewing remains active. Stop at any time from this phone."
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            confirmRemoteControl = false
+                            runCatching { RemoteControlSession.enableControl(context) }
+                                .onFailure {
+                                    model.showNotice(
+                                        it.message ?: "Could not enable touch control."
+                                    )
+                                }
+                        }
+                    ) {
+                        Text("Allow touch control")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { confirmRemoteControl = false }) { Text("Cancel") }
+                },
+            )
         if (confirmForget)
             AlertDialog(
                 onDismissRequest = { confirmForget = false },
@@ -231,6 +297,53 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
                                     }
                             }
                         }
+                    item {
+                        Panel("Screen control") {
+                            Text(
+                                "View the phone screen on your Mac and send a touch, Back or Home. Screen images are requested one at a time over the encrypted connection."
+                            )
+                            Text(
+                                if (remoteControlEnabled) "Viewing and touch control active"
+                                else if (remoteActive) "Screen viewing active · Touch control off"
+                                else if (remoteServiceReady) "Ready for a phone-approved session"
+                                else "Enable the screen-control accessibility service first."
+                            )
+                            if (!remoteServiceReady)
+                                Button(
+                                    onClick = {
+                                        context.startActivity(
+                                            Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                                ) {
+                                    Text("Open Accessibility settings")
+                                }
+                            if (remoteActive)
+                                if (!remoteControlEnabled)
+                                    Button(
+                                        onClick = { confirmRemoteControl = true },
+                                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                                    ) {
+                                        Text("Enable touch control")
+                                    }
+                            if (remoteActive)
+                                Button(
+                                    onClick = { RemoteControlSession.stop(context) },
+                                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                                ) {
+                                    Text("Stop screen control")
+                                }
+                            else
+                                Button(
+                                    onClick = { confirmRemote = true },
+                                    enabled = connected && remoteServiceReady,
+                                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                                ) {
+                                    Text("Start screen viewing")
+                                }
+                        }
+                    }
                 }
                 if (section == 2) {
                     item {
@@ -357,7 +470,10 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
                             }
                             Text(clipboardStatus)
                             Text(
-                                "Text and links copied on your phone or Mac sync automatically to the other clipboard.",
+                                if (clipboardHelperReady)
+                                    "Text and links copy automatically in both directions."
+                                else
+                                    "Mac copies arrive automatically. To send a phone copy, use Share → Twinvia; background copying from other apps needs the optional helper.",
                                 style = MaterialTheme.typography.bodySmall,
                             )
                             if (sharedText.isNotEmpty()) {

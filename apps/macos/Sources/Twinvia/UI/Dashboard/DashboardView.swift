@@ -50,6 +50,7 @@ struct DashboardView: View {
                     Text("Notifications").tag(3)
                     Text("Contacts").tag(4)
                     Text("History").tag(5)
+                    Text("Screen").tag(6)
                 }.pickerStyle(.segmented)
 
                 if model.dashboardSection == 0 {
@@ -101,6 +102,7 @@ struct DashboardView: View {
                 }
                 if model.dashboardSection == 4 { PhoneBrowserView(kind: .contacts, model: model) }
                 if model.dashboardSection == 5 { PhoneBrowserView(kind: .calls, model: model) }
+                if model.dashboardSection == 6 { RemoteControlView(model: model) }
                 if model.dashboardSection == 1 {
                     PhoneBrowserView(kind: .files, model: model)
                     Divider().padding(.vertical, 8)

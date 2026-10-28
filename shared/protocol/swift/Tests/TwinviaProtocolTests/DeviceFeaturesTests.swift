@@ -70,4 +70,28 @@ final class DeviceFeaturesTests: XCTestCase {
         XCTAssertThrowsError(try PhoneCallState(state: "active", token: id, approval: "bad").validate())
     }
 
+    func testRemoteTouchBoundsAndScreenPayload() throws {
+        try DeviceCommand(action: .remoteTap, key: "0,10000").validate()
+        try DeviceCommand(action: .remoteSnapshot).validate()
+        try DeviceCommand(action: .remoteSwipe, key: "5000,100,5000,8000,300").validate()
+        try DeviceCommand(action: .remoteNotifications).validate()
+        for key in ["-1,10", "10001,0", "a,1", "0,0,0", "1.5,2"] {
+            XCTAssertThrowsError(try DeviceCommand(action: .remoteTap, key: key).validate())
+        }
+        for key in ["0,0,0,0,300", "0,0,10001,0,300", "0,0,200,0,79", "0,0,200,0,1501", "0,0,200,0"] {
+            XCTAssertThrowsError(try DeviceCommand(action: .remoteSwipe, key: key).validate())
+        }
+        let jpeg = Data([0xFF, 0xD8, 0xFF, 0xD9]).base64EncodedString()
+        let result = CommandResult(
+            requestId: id, success: true, message: "Screen",
+            screen: RemoteScreen(jpegBase64: jpeg, width: 480, height: 320))
+        try result.validate()
+        XCTAssertNotNil(
+            try WireCodec.decode(
+                CommandResult.self,
+                from: WireCodec.encode(WireEnvelope(sourceDeviceId: id, payload: result))
+            ).payload.screen)
+        XCTAssertThrowsError(try RemoteScreen(jpegBase64: "bad", width: 480, height: 320).validate())
+    }
+
 }

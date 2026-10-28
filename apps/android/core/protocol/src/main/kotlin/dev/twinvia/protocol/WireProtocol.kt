@@ -184,9 +184,10 @@ object WireCodec {
                         isUUID(it.requestId) &&
                             it.message.isNotEmpty() &&
                             it.message.length <= 256 &&
-                            (it.success || it.data == null)
+                            (it.success || (it.data == null && it.screen == null))
                     )
                     it.data?.validate()
+                    it.screen?.validate()
                 }
             MessageType.DEVICE_STATUS ->
                 json.decodeFromJsonElement<DeviceStatus>(envelope.payload).let {

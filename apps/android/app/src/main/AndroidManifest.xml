@@ -59,6 +59,18 @@
             android:name=".core.connection.BridgeConnectionService"
             android:exported="false"
             android:foregroundServiceType="connectedDevice" />
+        <receiver android:name=".features.remote.StopRemoteControlReceiver" android:exported="false" />
+        <service
+            android:name=".features.remote.RemoteAccessibilityService"
+            android:exported="true"
+            android:label="@string/remote_accessibility_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice"
+                android:resource="@xml/remote_accessibility" />
+        </service>
         <service
             android:name=".features.notifications.BridgeNotificationListener"
             android:exported="true"

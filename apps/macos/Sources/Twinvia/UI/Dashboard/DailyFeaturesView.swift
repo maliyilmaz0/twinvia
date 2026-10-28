@@ -50,8 +50,10 @@ struct DailyFeaturesView: View {
                     "Automatic clipboard sync",
                     isOn: Binding(get: { clipboard.enabled }, set: { clipboard.setEnabled($0) }))
                 Text(clipboard.status).font(.callout).foregroundStyle(.secondary)
-                Text("Text and links copied on one device automatically reach the other clipboard.")
-                    .font(.caption).foregroundStyle(.secondary)
+                Text(
+                    "Mac copies reach your phone automatically. Phone copies from other apps need the optional helper or Android Share."
+                )
+                .font(.caption).foregroundStyle(.secondary)
                 if !controls.message.isEmpty { Text(controls.message).font(.callout).foregroundStyle(.secondary) }
             }.padding(12)
         }

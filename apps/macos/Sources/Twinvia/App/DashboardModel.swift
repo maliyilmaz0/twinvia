@@ -14,6 +14,10 @@ final class DashboardModel: ObservableObject {
     let controls: DeviceControls
     let clipboard: AutomaticClipboard
     let phoneData: PhoneDataStore
+    let remoteControl: RemoteControlModel
+    #if DEBUG
+        private var remoteSmoke: RemoteSmokeTest?
+    #endif
     let callAudio: CallAudioRelay
     let calls = HandsFreeController()
     private let notificationPresenter = NotificationPresenter()
@@ -69,6 +73,18 @@ final class DashboardModel: ObservableObject {
                 guard let client else { throw TransferFailure("Phone disconnected.") }
                 return try client.sendCommand(command)
             })
+        remoteControl = RemoteControlModel { [weak client] command in
+            guard let client else { throw TransferFailure("Phone disconnected.") }
+            return try client.sendCommand(command)
+        }
+        #if DEBUG
+            if CommandLine.arguments.contains("--remote-smoke-test") {
+                remoteSmoke = RemoteSmokeTest { [weak client] command in
+                    guard let client else { throw TransferFailure("Phone disconnected.") }
+                    return try client.sendCommand(command)
+                }
+            }
+        #endif
         clipboard = AutomaticClipboard(
             enabled: UserDefaults.standard.object(forKey: "automaticClipboard") as? Bool ?? true,
             canSend: { [weak client] in
@@ -93,6 +109,10 @@ final class DashboardModel: ObservableObject {
                 try client.sendFileChunk(chunk)
             })
         bridge.onConnected = { [weak self] in
+            self?.remoteControl.connected()
+            #if DEBUG
+                self?.remoteSmoke?.connected()
+            #endif
             guard let self, self.bridge.peerCapabilities.contains("phone.browse") else { return }
             self.phoneData.load(.contacts); self.phoneData.load(.calls); self.phoneData.load(.files)
         }
@@ -101,6 +121,10 @@ final class DashboardModel: ObservableObject {
         bridge.onFileChunk = { [weak self] in self?.transfers.receiveChunk($0) }
         bridge.onDisconnected = { [weak self] in
             self?.transfers.disconnected(); self?.controls.disconnected(); self?.phoneData.disconnected();
+            self?.remoteControl.disconnected();
+            #if DEBUG
+                self?.remoteSmoke?.disconnected()
+            #endif
             self?.clipboard.disconnected(); self?.callAudio.disconnected(); self?.phoneCall = nil;
             self?.callHandoff.disconnected(); self?.notificationPresenter.removeIncomingCall()
         }
@@ -110,6 +134,10 @@ final class DashboardModel: ObservableObject {
         bridge.onSharedText = { [weak self] in self?.clipboard.receive($0.text) }
         bridge.onCommandResult = { [weak self] in
             self?.controls.receive($0); self?.clipboard.receive($0); self?.phoneData.receive($0);
+            self?.remoteControl.receive($0);
+            #if DEBUG
+                self?.remoteSmoke?.receive($0)
+            #endif
             self?.callAudio.receive($0)
         }
         notificationPresenter.onAction = { [weak self] in self?.controls.perform($0) }
@@ -248,6 +276,7 @@ final class DashboardModel: ObservableObject {
             case .calls: dashboardSection = 2
             case .contacts: dashboardSection = 4; phoneData.load(.contacts)
             case .history: dashboardSection = 5; phoneData.load(.calls)
+            case .screen: dashboardSection = 6
             case .files(let path):
                 dashboardSection = 1
                 phoneData.load(.files, folder: path)
