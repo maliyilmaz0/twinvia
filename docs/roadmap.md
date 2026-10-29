@@ -38,7 +38,7 @@ The BLE preview is not an acceptable basis for a usable live desktop stream. A s
 
 ### Stage 3 — Remote input: basic source prototype; richer input exploratory
 
-The source build adds tap, swipe, Back, Home and opening the notification panel after a separate phone-side control approval. Text entry and other actions remain exploratory. Android accessibility gesture APIs are the input adapter, not a clipboard-reading permission or automatic approval to control the device. See [AccessibilityService](https://developer.android.com/reference/android/accessibilityservice/AccessibilityService).
+The source build adds tap, swipe, explicit text/Enter/Backspace input, Back, Home and opening the notification panel after a separate phone-side control approval. Broader key handling, scroll-wheel gestures and live video remain exploratory. Android accessibility gesture APIs are the input adapter, not a clipboard-reading permission or automatic approval to control the device. See [AccessibilityService](https://developer.android.com/reference/android/accessibilityservice/AccessibilityService).
 
 Screen-view consent and input-control consent must remain separate. An unpaired peer, ended session, locked phone or revoked permission must reject input. Security dialogs and OS restrictions remain authoritative. No silent unlock, password collection, hidden unattended control or private application storage access is planned.
 
@@ -54,7 +54,7 @@ Screen-view consent and input-control consent must remain separate. An unpaired 
 | System integration | Finder/share-sheet entry points, Android sharing intents for additional formats, clearer keyboard shortcuts and deep links | Planned; retain explicit approval and Android URI permissions |
 | Multiple devices | Named trusted devices, intentional active-target selection and individual revoke/unpair controls | Exploratory; prevent clipboard/notification broadcast to every paired device by default |
 | Privacy and support | Per-feature permissions, session visibility, safe diagnostic export, documented retention/deletion and troubleshooting | Planned; diagnostics exclude clipboard text, pairing secrets and notification content by default |
-| Updates and recovery | Signed update notifications, compatible protocol/version negotiation and safe migration/recovery | Planned; no forced reinstall or trust reset as a normal update step |
+| Updates and recovery | Signed GitHub stable update channel, Sparkle and Android system-installer flow are in source builds | Real installation/relaunch and old-preview certificate migration need device validation; see [updates](updates.md). No forced reinstall or trust reset. |
 
 ## Calls, messaging, and faster wireless links
 

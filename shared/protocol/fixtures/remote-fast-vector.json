@@ -1,0 +1,6 @@
+{
+  "session": "12345678-1234-1234-1234-123456789abc",
+  "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+  "plain": "detail",
+  "sealed": "00000000000000002275cedc5cc182649982b139d04cc494e4366308be08"
+}

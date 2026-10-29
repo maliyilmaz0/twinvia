@@ -73,6 +73,12 @@ final class DeviceFeaturesTests: XCTestCase {
     func testRemoteTouchBoundsAndScreenPayload() throws {
         try DeviceCommand(action: .remoteTap, key: "0,10000").validate()
         try DeviceCommand(action: .remoteSnapshot).validate()
+        try DeviceCommand(action: .remoteSnapshotDetail).validate()
+        try DeviceCommand(action: .remoteText, text: "Unicode 👋").validate()
+        try DeviceCommand(action: .remoteKey, key: "enter").validate()
+        XCTAssertThrowsError(
+            try DeviceCommand(action: .remoteText, text: String(repeating: "a", count: 1025)).validate())
+        XCTAssertThrowsError(try DeviceCommand(action: .remoteKey, key: "shell").validate())
         try DeviceCommand(action: .remoteSwipe, key: "5000,100,5000,8000,300").validate()
         try DeviceCommand(action: .remoteNotifications).validate()
         for key in ["-1,10", "10001,0", "a,1", "0,0,0", "1.5,2"] {

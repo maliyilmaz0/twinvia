@@ -167,6 +167,7 @@ struct DashboardView: View {
                 }
                 if model.dashboardSection == 0 {
                     DailyFeaturesView(controls: model.controls, bridge: bridge, clipboard: model.clipboard)
+                    UpdateSettingsView()
                 }
                 if model.dashboardSection == 2 {
                     CallsView(model: model, calls: model.calls)

@@ -129,6 +129,11 @@ struct TrayView: View {
             HStack {
                 Button(action: showDashboard) { Label("Control center", systemImage: "slider.horizontal.3") }
                     .keyboardShortcut(",", modifiers: .command)
+                Button {
+                    MirrorWindow.show(model: model)
+                } label: {
+                    Label("Phone mirror", systemImage: "iphone")
+                }
                 Spacer()
                 Button {
                     NSApplication.shared.terminate(nil)

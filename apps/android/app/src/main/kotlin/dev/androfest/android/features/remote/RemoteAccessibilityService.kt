@@ -29,6 +29,11 @@ class RemoteAccessibilityService : AccessibilityService() {
     }
 
     override fun onServiceConnected() {
+        serviceInfo = serviceInfo.apply {
+            flags =
+                flags or
+                    android.accessibilityservice.AccessibilityServiceInfo.FLAG_INPUT_METHOD_EDITOR
+        }
         current = this
     }
 
@@ -48,7 +53,7 @@ class RemoteAccessibilityService : AccessibilityService() {
         super.onDestroy()
     }
 
-    suspend fun snapshot(): RemoteScreen =
+    suspend fun snapshot(detail: Boolean = false): RemoteScreen =
         withTimeout(8_000) {
             val result =
                 suspendCancellableCoroutine<ScreenshotResult> { continuation ->
@@ -78,20 +83,27 @@ class RemoteAccessibilityService : AccessibilityService() {
                         ?: error("Could not read the phone screen.")
                 val width = hardware.width
                 val height = hardware.height
-                val scale = minOf(1.0, 480.0 / maxOf(width, height))
+                val scale = minOf(1.0, (if (detail) 2160.0 else 480.0) / maxOf(width, height))
                 val targetWidth = maxOf(1, (width * scale).toInt())
                 val targetHeight = maxOf(1, (height * scale).toInt())
-                val software = hardware.copy(Bitmap.Config.ARGB_8888, false)
+                val software =
+                    try {
+                        hardware.copy(Bitmap.Config.ARGB_8888, false)
+                            ?: error("Could not copy the phone screen.")
+                    } finally {
+                        hardware.recycle()
+                    }
                 val small = Bitmap.createScaledBitmap(software, targetWidth, targetHeight, true)
                 try {
                     var bytes = ByteArray(0)
-                    for (quality in listOf(50, 35, 20)) {
+                    for (quality in
+                        if (detail) listOf(85, 70, 55, 40, 25) else listOf(50, 35, 20)) {
                         val output = ByteArrayOutputStream()
                         small.compress(Bitmap.CompressFormat.JPEG, quality, output)
                         bytes = output.toByteArray()
-                        if (bytes.size <= 70_000) break
+                        if (bytes.size <= if (detail) 130_000 else 70_000) break
                     }
-                    check(bytes.size <= 70_000) {
+                    check(bytes.size <= if (detail) 130_000 else 70_000) {
                         "Screen image exceeds the Bluetooth transfer limit."
                     }
                     RemoteScreen(
@@ -107,6 +119,29 @@ class RemoteAccessibilityService : AccessibilityService() {
                 buffer.close()
             }
         }
+
+    fun type(text: String?, key: String?) {
+        val connection =
+            inputMethod?.currentInputConnection ?: error("Focus a text field on the phone first.")
+        when (key) {
+            "backspace" -> connection.deleteSurroundingText(1, 0)
+            "enter" -> {
+                connection.sendKeyEvent(
+                    android.view.KeyEvent(
+                        android.view.KeyEvent.ACTION_DOWN,
+                        android.view.KeyEvent.KEYCODE_ENTER,
+                    )
+                )
+                connection.sendKeyEvent(
+                    android.view.KeyEvent(
+                        android.view.KeyEvent.ACTION_UP,
+                        android.view.KeyEvent.KEYCODE_ENTER,
+                    )
+                )
+            }
+            else -> connection.commitText(requireNotNull(text), 1, null)
+        }
+    }
 
     suspend fun tap(x: Int, y: Int) =
         withTimeout(5_000) {

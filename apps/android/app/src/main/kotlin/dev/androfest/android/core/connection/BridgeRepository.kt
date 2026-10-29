@@ -359,6 +359,7 @@ class BridgeRepository(
                                             "call.handoff",
                                             "phone.browse",
                                             "remote.screen",
+                                            "remote.screen.v2",
                                         )
                                 ),
                         )

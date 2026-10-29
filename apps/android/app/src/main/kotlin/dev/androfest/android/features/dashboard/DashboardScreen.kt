@@ -128,7 +128,7 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
                 title = { Text("Allow Mac touch control?") },
                 text = {
                     Text(
-                        "Your paired Mac can send taps, swipes, Back, Home and a command to open notifications while screen viewing remains active. Stop at any time from this phone."
+                        "Your paired Mac can send taps, swipes, keyboard input, Back, Home and a command to open notifications while screen viewing remains active. Stop at any time from this phone."
                     )
                 },
                 confirmButton = {
@@ -346,6 +346,11 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
                     }
                 }
                 if (section == 2) {
+                    item {
+                        Panel("Updates") {
+                            dev.androfest.android.features.updates.UpdatePanel(model.updates)
+                        }
+                    }
                     item {
                         SectionHeading(
                             "Make it yours.",

@@ -6,6 +6,10 @@ on:
         description: Successful Build and test run ID from a push to main
         required: true
         type: string
+      stable:
+        description: Publish to the signed in-app stable update channel
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -62,6 +66,33 @@ jobs:
           set -euo pipefail
           gh run download "$SOURCE_RUN_ID" --name macos-debug --dir .artifacts/release-input/macos
           gh run download "$SOURCE_RUN_ID" --name android-debug --dir .artifacts/release-input/android
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        with:
+          packages: platform-tools
+      - name: Verify persistent Android release signature
+        env:
+          EXPECTED_SIGNER: ${{ vars.TWINVIA_ANDROID_SIGNER_SHA256 }}
+        run: |
+          sdkmanager 'build-tools;36.0.0'
+          python3 - <<'PYSIGN'
+          import os, re, subprocess, plistlib
+          from pathlib import Path
+          signer = Path(os.environ['ANDROID_HOME']) / 'build-tools/36.0.0/apksigner'
+          apk = Path('.artifacts/release-input/android/.artifacts/android/Twinvia-debug.apk')
+          output = subprocess.check_output([str(signer), 'verify', '--print-certs', str(apk)], text=True)
+          actual = [value.lower() for value in re.findall(r'^Signer #[0-9]+ certificate SHA-256 digest: ([a-fA-F0-9]{64})$', output, re.M)]
+          expected = os.environ['EXPECTED_SIGNER'].lower()
+          assert re.fullmatch('[a-f0-9]{64}', expected) and actual == [expected], 'Release APK must use the persistent distribution identity'
+          expected_info = plistlib.loads(Path('apps/macos/Configuration/Info.plist').read_bytes())
+          version_code = subprocess.check_output(['apkanalyzer', 'manifest', 'version-code', str(apk)], text=True).strip()
+          version_name = subprocess.check_output(['apkanalyzer', 'manifest', 'version-name', str(apk)], text=True).strip()
+          assert version_code == expected_info['CFBundleVersion'] and version_name == expected_info['CFBundleShortVersionString'], 'APK version/build mismatch'
+          print('Persistent Android release signature and binary version verified.')
+          PYSIGN
       - name: Package preview
         id: package
         env:
@@ -71,9 +102,16 @@ jobs:
           version=$(python3 scripts/package-release.py --inputs .artifacts/release-input --output .artifacts/release-assets --run-id "$SOURCE_RUN_ID" --commit "$SOURCE_SHA" --repository "$GH_REPO")
           echo "version=$version" >> "$GITHUB_OUTPUT"
           (cd .artifacts/release-assets && sha256sum --check SHA256SUMS)
+      - name: Sign update assets
+        env:
+          TWINVIA_UPDATE_PRIVATE_KEY: ${{ secrets.TWINVIA_UPDATE_PRIVATE_KEY }}
+          VERSION: ${{ steps.package.outputs.version }}
+          STABLE: ${{ inputs.stable }}
+        run: python3 scripts/sign-update-release.py --directory .artifacts/release-assets --version "$VERSION"
       - name: Create release draft and upload assets
         env:
           VERSION: ${{ steps.package.outputs.version }}
+          STABLE: ${{ inputs.stable }}
           SOURCE_SHA: ${{ steps.source.outputs.sha }}
         run: |
           set -euo pipefail
@@ -84,8 +122,13 @@ jobs:
       - name: Verify remote bytes and publish preview
         env:
           VERSION: ${{ steps.package.outputs.version }}
+          STABLE: ${{ inputs.stable }}
         run: |
           set -euo pipefail
           gh release download "v$VERSION" --dir "$RUNNER_TEMP/release-verification"
           (cd "$RUNNER_TEMP/release-verification" && sha256sum --check SHA256SUMS)
-          gh release edit "v$VERSION" --draft=false --prerelease --latest=false
+          if [[ "$STABLE" == true ]]; then
+            gh release edit "v$VERSION" --draft=false --prerelease=false --latest=true
+          else
+            gh release edit "v$VERSION" --draft=false --prerelease --latest=false
+          fi

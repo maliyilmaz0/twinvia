@@ -7,3 +7,8 @@ useDefault = true
 description = "Exact synthetic notification key in public protocol fixtures; not an authentication credential"
 regexTarget = "secret"
 regexes = ['''^fixture-notification-1$''']
+
+[[allowlists]]
+description = "Exact public AES-GCM interoperability vector using bytes 0 through 31; never a runtime key"
+regexTarget = "secret"
+regexes = ['''^AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=$''']

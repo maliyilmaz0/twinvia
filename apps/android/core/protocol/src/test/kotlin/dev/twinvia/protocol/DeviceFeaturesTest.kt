@@ -102,6 +102,15 @@ class DeviceFeaturesTest {
     fun `remote actions reject out of range touches and invalid screen metadata`() {
         DeviceCommand(DeviceAction.REMOTE_TAP, key = "0,10000").validate()
         DeviceCommand(DeviceAction.REMOTE_SNAPSHOT).validate()
+        DeviceCommand(DeviceAction.REMOTE_SNAPSHOT_DETAIL).validate()
+        DeviceCommand(DeviceAction.REMOTE_TEXT, text = "Unicode 👋").validate()
+        DeviceCommand(DeviceAction.REMOTE_KEY, key = "enter").validate()
+        assertThrows(IllegalArgumentException::class.java) {
+            DeviceCommand(DeviceAction.REMOTE_TEXT, text = "a".repeat(1025)).validate()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            DeviceCommand(DeviceAction.REMOTE_KEY, key = "shell").validate()
+        }
         DeviceCommand(DeviceAction.REMOTE_SWIPE, key = "5000,100,5000,8000,300").validate()
         DeviceCommand(DeviceAction.REMOTE_NOTIFICATIONS).validate()
         for (key in listOf("-1,10", "10001,0", "a,1", "0,0,0", "1.5,2")) {
@@ -125,7 +134,7 @@ class DeviceFeaturesTest {
             WireCodec.message(
                 MessageType.COMMAND_RESULT,
                 id,
-                CommandResult(id, true, "Screen", screen = RemoteScreen("abcd", 641, 10)),
+                CommandResult(id, true, "Screen", screen = RemoteScreen("abcd", 2561, 10)),
             )
         }
     }

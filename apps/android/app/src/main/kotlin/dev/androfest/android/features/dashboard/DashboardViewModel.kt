@@ -18,6 +18,7 @@ import kotlinx.coroutines.withContext
 
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as TwinviaApplication
+    val updates = app.updates
     val identity = app.deviceIdentity
     val notifications = app.notifications
     val bridge = app.bridge

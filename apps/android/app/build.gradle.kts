@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -12,9 +13,26 @@ android {
         targetSdk = 36
         versionCode = 11
         versionName = "0.9.0"
+        buildConfigField(
+            "String",
+            "UPDATE_PUBLIC_KEY",
+            "\"LTBw49qAUZkD4makhIWN5ITZ4uiXzRBc9kDDAb7RHnA=\"",
+        )
     }
+    val distributionStore = System.getenv("TWINVIA_KEYSTORE_PATH")
+    val distributionSigning =
+        if (!distributionStore.isNullOrEmpty())
+            signingConfigs.create("distribution") {
+                storeFile = file(distributionStore)
+                storePassword =
+                    System.getenv("TWINVIA_KEYSTORE_PASSWORD") ?: error("Missing signing password")
+                keyAlias = "twinvia"
+                keyPassword = storePassword
+            }
+        else null
     buildTypes {
         getByName("debug") {
+            if (distributionSigning != null) signingConfig = distributionSigning
             // Isolated real-device pairing tests must never replace user trust.
             if (
                 providers

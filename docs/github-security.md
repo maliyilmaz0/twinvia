@@ -44,7 +44,7 @@ python3 scripts/check-security.py
 ./scripts/check.sh
 ```
 
-Gitleaks retains all default rules. The only configured exception is the exact public synthetic string `fixture-notification-1`, which denotes a notification ID in fixed protocol examples. No fixture directory, history range, real credential type or scanner failure is broadly suppressed. Any new finding needs investigation before an exception is added. These checks run after a GitHub push; they do not replace server-side push protection or revoking an exposed credential.
+Gitleaks retains all default rules. Configured exceptions cover only the exact public synthetic notification identifier `fixture-notification-1` and the exact public AES-GCM interoperability vector made from bytes 0 through 31. Neither is a runtime credential. No fixture directory, history range, real credential type or scanner failure is broadly suppressed. Any new finding needs investigation before an exception is added. These checks run after a GitHub push; they do not replace server-side push protection or revoking an exposed credential.
 
 Swift coverage artifacts and Android test/lint reports are retained for seven days. Coverage exports are evidence, not an asserted percentage or a new arbitrary threshold. Full Android/UI coverage is not claimed. The local security tools do not constitute Kotlin/Swift semantic vulnerability analysis, and clean scanners do not establish absence of bugs.
 

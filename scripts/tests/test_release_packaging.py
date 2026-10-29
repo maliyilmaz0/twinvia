@@ -31,13 +31,13 @@ class ReleasePackagingTests(unittest.TestCase):
             archive.writestr("classes.dex", b"test fixture")
         (android / "private-capture.txt").write_text("must not ship")
 
-    def write_mac(self, version="0.9.0", extra=None, helper=True, legacy=False):
+    def write_mac(self, version="0.9.0", extra=None, helper=True, legacy=False, build="11"):
         executable = "Androfest" if legacy else "Twinvia"
         helper_name = "Androfest" if legacy else "Twinvia"
         with ZipFile(self.mac, "w") as archive:
             archive.writestr("Twinvia.app/Contents/Info.plist", plistlib.dumps({
                 "CFBundleIdentifier": "dev.androfest.macos", "CFBundleShortVersionString": version,
-                "CFBundleExecutable": executable,
+                "CFBundleExecutable": executable, "CFBundleVersion": build,
             }))
             archive.writestr(f"Twinvia.app/Contents/MacOS/{executable}", b"test fixture")
             if helper:
@@ -71,7 +71,7 @@ class ReleasePackagingTests(unittest.TestCase):
                 self.assertFalse(self.output.exists())
 
     def test_missing_helper_and_mismatched_version_are_rejected(self):
-        for options in [{"helper": False}, {"version": "0.8.0"}]:
+        for options in [{"helper": False}, {"version": "0.8.0"}, {"build": "10"}]:
             with self.subTest(options=options):
                 self.write_mac(**options)
                 with self.assertRaises(ValueError):

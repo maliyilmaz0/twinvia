@@ -52,6 +52,10 @@ class DeviceCommandHandler(
             command.action in
                 setOf(
                     DeviceAction.REMOTE_SNAPSHOT,
+                    DeviceAction.REMOTE_SNAPSHOT_DETAIL,
+                    DeviceAction.REMOTE_FAST_OPEN,
+                    DeviceAction.REMOTE_TEXT,
+                    DeviceAction.REMOTE_KEY,
                     DeviceAction.REMOTE_TAP,
                     DeviceAction.REMOTE_SWIPE,
                     DeviceAction.REMOTE_BACK,
@@ -64,11 +68,36 @@ class DeviceCommandHandler(
                     RemoteAccessibilityService.current
                         ?: error("Enable Twinvia screen control in Accessibility settings.")
                 when (command.action) {
-                    DeviceAction.REMOTE_SNAPSHOT -> {
-                        val screen = service.snapshot()
+                    DeviceAction.REMOTE_FAST_OPEN -> {
+                        val channel =
+                            withContext(Dispatchers.IO) {
+                                dev.androfest.android.features.remote.FastScreenServer.open(context)
+                            }
+                        RemoteControlSession.requireActive(context)
+                        CommandResult(
+                            id,
+                            true,
+                            "Bluetooth Classic screen lane is ready to connect.",
+                            channel = channel,
+                        )
+                    }
+                    DeviceAction.REMOTE_SNAPSHOT,
+                    DeviceAction.REMOTE_SNAPSHOT_DETAIL -> {
+                        val screen =
+                            service.snapshot(command.action == DeviceAction.REMOTE_SNAPSHOT_DETAIL)
                         RemoteControlSession.requireActive(context)
                         check(isCurrent()) { "The connection changed." }
                         CommandResult(id, true, "Phone screen updated.", screen = screen)
+                    }
+                    DeviceAction.REMOTE_TEXT,
+                    DeviceAction.REMOTE_KEY -> {
+                        RemoteControlSession.requireControlActive(context)
+                        withContext(Dispatchers.Main.immediate) {
+                            check(isCurrent()) { "The connection changed." }
+                            RemoteControlSession.requireControlActive(context)
+                            service.type(command.text, command.key)
+                        }
+                        CommandResult(id, true, "Keyboard input sent.")
                     }
                     DeviceAction.REMOTE_TAP -> {
                         RemoteControlSession.requireControlActive(context)
