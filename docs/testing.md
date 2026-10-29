@@ -54,3 +54,9 @@ The script does not reset battery statistics or simulate unplugging. Mac CPU use
 ## CI evidence
 
 CI exports Android JUnit XML, HTML test reports, and lint reports; Mac job logs contain Swift test results. Hardware tests are deliberate local checks, not green-check substitutes. Repository configuration, local tests, real-device behavior, and a successfully run remote pipeline are separate evidence levels.
+
+## Mirroring and signed updates
+
+`RemoteFrameCipherTests` / `RemoteFrameCipherTest` use the same independent AES-GCM vector and exercise tampering, reflection, replay, reordering and size rejection. Mac image tests inspect real JPEG dimensions against protocol metadata. Android update tests verify Ed25519 signatures and bounded/repository-scoped metadata; Python publication tests use real OpenSSL signatures and reject a mismatched update identity. The native signing regression includes a nested Mach-O framework. These checks do not establish physical RFCOMM throughput or Android installer behavior.
+
+Without a phone, validate compilation, signatures, protocol tests and the Mac window's disconnected state. With the phone, verify permission denial/revocation, five-minute expiry, lock/disconnect, BLE/Classic coexistence, gestures/text, memory/latency at both qualities, then a real signed APK update preserving data. Verify Mac update download, signature rejection, installation and relaunch using a controlled new signed build before publishing an upgrade claim. See [mirroring](remote-control.md) and [updates](updates.md).

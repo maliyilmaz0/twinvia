@@ -46,6 +46,10 @@ class DeviceFeatures(
                 DeviceAction.FILES_LIST,
                 DeviceAction.FILES_DOWNLOAD -> error("Phone queries must run on the IO dispatcher.")
                 DeviceAction.REMOTE_SNAPSHOT,
+                DeviceAction.REMOTE_SNAPSHOT_DETAIL,
+                DeviceAction.REMOTE_FAST_OPEN,
+                DeviceAction.REMOTE_TEXT,
+                DeviceAction.REMOTE_KEY,
                 DeviceAction.REMOTE_TAP,
                 DeviceAction.REMOTE_SWIPE,
                 DeviceAction.REMOTE_BACK,

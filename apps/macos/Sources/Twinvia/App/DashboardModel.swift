@@ -245,6 +245,7 @@ final class DashboardModel: ObservableObject {
     func forgetPhone() { calls.stop(); bridge.forget(); recentNotifications = [] }
 
     func systemWillSleep() {
+        remoteControl.prepareForSleep()
         // Audio hardware and the legacy HFP parser must not retain half-open
         // streams across sleep. Native discovery has its own wake recovery.
         callAudio.prepareForSleep()
@@ -256,6 +257,7 @@ final class DashboardModel: ObservableObject {
     }
 
     func applicationWillTerminate() {
+        remoteControl.disconnected()
         callAudio.stop(notify: false)
         calls.stop()
         bridge.shutdown()

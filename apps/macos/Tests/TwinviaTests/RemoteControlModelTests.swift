@@ -31,4 +31,24 @@ final class RemoteControlModelTests: XCTestCase {
         XCTAssertFalse(model.busy)
         XCTAssertNil(model.image)
     }
+    func testDetailIsNegotiatedAndPermissionFailureStopsPreview() {
+        let id = UUID().uuidString
+        var sent: [DeviceCommand] = []
+        let model = RemoteControlModel { command in
+            sent.append(command); return id
+        }
+        model.quality = .detail
+        model.configure(supportsDetail: false)
+        model.requestFrame()
+        XCTAssertEqual(sent.last?.action, .remoteSnapshot)
+        model.receive(CommandResult(requestId: id, success: false, message: "No lease"))
+        model.configure(supportsDetail: true)
+        model.setPreview(true)
+        XCTAssertEqual(sent.last?.action, .remoteSnapshotDetail)
+        XCTAssertTrue(model.preview)
+        model.receive(CommandResult(requestId: id, success: false, message: "No lease"))
+        XCTAssertFalse(model.preview)
+        XCTAssertNil(model.image)
+    }
+
 }

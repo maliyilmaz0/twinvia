@@ -32,12 +32,21 @@ class MacSigningTests(unittest.TestCase):
                 subprocess.run(['xcrun', 'clang', '-x', 'c', *options, '-Wl,-no_adhoc_codesign',
                                 '-o', str(binaries / name), '-'], input=source, text=True,
                                capture_output=True, check=True)
+            framework = contents / 'Frameworks/Nested.framework'
+            (framework / 'Resources').mkdir(parents=True)
+            (framework / 'Resources/Info.plist').write_bytes(plistlib.dumps({
+                'CFBundleIdentifier': 'dev.twinvia.signing-fixture.framework',
+                'CFBundleExecutable': 'Nested', 'CFBundlePackageType': 'FMWK',
+            }))
+            subprocess.run(['xcrun', 'clang', '-x', 'c', '-dynamiclib', '-Wl,-no_adhoc_codesign',
+                            '-o', str(framework / 'Nested'), '-'],
+                           input='int nested(void) { return 3; }', text=True, capture_output=True, check=True)
             unsigned = subprocess.run(['codesign', '--verify', str(binaries / '__preview.dylib')],
                                       capture_output=True)
             self.assertNotEqual(unsigned.returncode, 0, 'Fixture must start unsigned')
             subprocess.run([sys.executable, str(ROOT / 'scripts/sign-macos.py'), str(app)],
                            env={**os.environ, 'TWINVIA_SIGNING_IDENTITY': '-'},
                            capture_output=True, check=True)
-            for target in [app, binaries / '__preview.dylib', binaries / 'SigningFixture.debug.dylib']:
+            for target in [app, framework, binaries / '__preview.dylib', binaries / 'SigningFixture.debug.dylib']:
                 subprocess.run(['codesign', '--verify', '--deep', '--strict', str(target)],
                                capture_output=True, check=True)
