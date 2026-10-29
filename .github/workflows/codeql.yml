@@ -35,7 +35,7 @@ jobs:
             runner: ubuntu-24.04
             build-mode: manual
           - language: swift
-            runner: macos-15
+            runner: macos-15-intel
             build-mode: manual
     runs-on: ${{ matrix.runner }}
     timeout-minutes: ${{ matrix.language == 'swift' && 90 || 30 }}
@@ -71,8 +71,8 @@ jobs:
           # --target builds only that target, so prepare each native dependency.
           # No Swift product target is built until CodeQL initializes below.
           for target in openssl_grpc abseil protobuf-utf8 protobuf ukey2 json smhasher NearbyCommon NearbyCoreAdapter; do
-            # CodeQL now ships a native ARM64 tracer on the ARM64 hosted image.
-            # Match the runner so the traced build can reuse these native objects.
+            # Swift extraction uses x86_64. Run on native Intel to avoid Rosetta
+            # overhead and keep preparation and traced builds on one architecture.
             xcrun swift build --arch "$(uname -m)" --package-path apps/macos/BluetoothBridge --target "$target" --jobs 6
           done
       - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
