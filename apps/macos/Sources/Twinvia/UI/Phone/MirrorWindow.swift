@@ -38,6 +38,8 @@ private final class MirrorWindowDelegate: NSObject, NSWindowDelegate {
 struct MirrorView: View {
     @ObservedObject private var remote: RemoteControlModel
     @ObservedObject private var bridge: BridgeClient
+    @AppStorage("playfulMotion") private var playfulMotion = true
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var typedText = ""
     @State private var showConnection = false
     @AppStorage("callBluetoothPeerAddress") private var phoneAddress = ""
@@ -104,6 +106,7 @@ struct MirrorView: View {
             GeometryReader { geometry in
                 ZStack {
                     Color.black
+                    if remote.image == nil { AuroraBackdrop() }
                     if let image = remote.image, remote.imageWidth > 0, remote.imageHeight > 0 {
                         let scale = min(
                             geometry.size.width / Double(remote.imageWidth),
@@ -130,12 +133,15 @@ struct MirrorView: View {
                             )
                             .accessibilityLabel("Phone screen. Click to tap; drag to swipe.")
                     } else {
-                        ContentUnavailableView(
-                            "Ready when you are", systemImage: "iphone",
-                            description: Text(
-                                "On your phone, approve screen viewing and optional touch control, then refresh here.")
-                        )
-                        .foregroundStyle(.white)
+                        VStack(spacing: 18) {
+                            ConnectionOrbit(connected: available)
+                            Text("Ready when you are").font(.system(.title2, design: .rounded, weight: .bold))
+                            Text("Approve screen viewing on your phone, then refresh here.")
+                                .font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                            Label("Your phone stays in control", systemImage: "lock.shield")
+                                .font(.caption).foregroundStyle(FestTheme.lime)
+                        }.padding(32)
+
                     }
                 }.frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -172,6 +178,7 @@ struct MirrorView: View {
                     remote.setPreview(!remote.preview)
                 } label: {
                     Image(systemName: remote.preview ? "pause.fill" : "play.fill")
+                        .contentTransition(reduceMotion || !playfulMotion ? .identity : .symbolEffect(.replace))
                 }.help(remote.preview ? "Pause preview" : "Refresh preview automatically")
                     .accessibilityLabel(remote.preview ? "Pause preview" : "Start preview")
                     .disabled(!available)
@@ -183,7 +190,10 @@ struct MirrorView: View {
                 Text(remote.quality.rawValue).font(.caption2).foregroundStyle(.secondary)
             }.padding(.horizontal, 16).padding(.bottom, 12)
         }
-        .background(.regularMaterial)
+        .background(FestTheme.background)
+        .preferredColorScheme(.dark).tint(FestTheme.violet)
+        .animation(reduceMotion || !playfulMotion ? nil : .easeOut(duration: 0.2), value: available)
+        .modifier(TwinviaMotion())
         .onAppear { remote.configure(supportsDetail: modern) }
         .onChange(of: bridge.connected) { _, _ in remote.configure(supportsDetail: modern) }
         .onChange(of: remote.quality) { _, _ in if !remote.busy && available { remote.requestFrame() } }

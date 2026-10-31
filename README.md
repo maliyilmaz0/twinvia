@@ -19,6 +19,7 @@ See the [transport comparison and requirements](docs/transports.md) for why this
 | Phone data | Paginated contacts, call history, and shared-storage browsing with separate Android permissions. Private application storage is excluded. |
 | Controls | Battery/charging/lock status, media controls, and a time-limited phone ringer. |
 | Screen control | Source builds provide a dedicated mirror window, Responsive/Detail images, tap/swipe, keyboard and navigation. An optional encrypted Bluetooth Classic screenshot lane is experimental and awaits device validation. Viewing and input require separate five-minute phone approvals; this is not a live-video stream or part of the 0.9.0 archive. |
+| Appearance | Dedicated mirror, feature launchpad, animated connection orbits and spring controls; Playful motion and system motion preferences are respected. |
 | In-app updates | Source builds include signed GitHub release updates: Sparkle on Mac and verified APK download/system installation on Android. Persistent Android signing is configured for trusted main CI. Older preview signing migration and a real upgrade test remain required. See [update setup](docs/updates.md). |
 | Calls | Call notifications, supported answer/end controls, and separate Bluetooth HFP dialing. Reliable Mac cellular-call audio is not provided by this BLE build. |
 

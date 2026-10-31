@@ -1,11 +1,13 @@
 package dev.androfest.android.features.dashboard
 
 import android.animation.ValueAnimator
+import android.content.SharedPreferences
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,6 +21,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
@@ -67,14 +72,74 @@ private val Day =
         outlineVariant = Color(0xFFD6D2E4),
     )
 
+private val LocalPlayfulMotion = staticCompositionLocalOf { true }
+
 @Composable
 fun TwinviaTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = if (isSystemInDarkTheme()) Night else Day, content = content)
+    val context = LocalContext.current
+    val preferences = remember {
+        context.getSharedPreferences("appearance", android.content.Context.MODE_PRIVATE)
+    }
+    var playful by remember { mutableStateOf(preferences.getBoolean("playfulMotion", true)) }
+    DisposableEffect(preferences) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            playful = preferences.getBoolean("playfulMotion", true)
+        }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    CompositionLocalProvider(LocalPlayfulMotion provides playful) {
+        MaterialTheme(colorScheme = if (isSystemInDarkTheme()) Night else Day, content = content)
+    }
+}
+
+@Composable
+fun MotionSettings() {
+    val context = LocalContext.current
+    val enabled = LocalPlayfulMotion.current
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("Playful motion", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Springy navigation and connection orbits. System animation settings take priority.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(
+            checked = enabled,
+            onCheckedChange = {
+                context
+                    .getSharedPreferences("appearance", android.content.Context.MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("playfulMotion", it)
+                    .apply()
+            },
+            modifier = Modifier.semantics { contentDescription = "Playful motion" },
+        )
+    }
+}
+
+/** One short entrance per navigation change, never a loop over the list contents. */
+@Composable
+fun Modifier.sectionEntrance(section: Int): Modifier {
+    val enabled = LocalPlayfulMotion.current && ValueAnimator.areAnimatorsEnabled()
+    val progress = remember { Animatable(1f) }
+    LaunchedEffect(section, enabled) {
+        if (enabled) {
+            progress.snapTo(0f)
+            progress.animateTo(1f, tween(240, easing = FastOutSlowInEasing))
+        } else progress.snapTo(1f)
+    }
+    return graphicsLayer {
+        alpha = if (enabled) 0.5f + progress.value * 0.5f else 1f
+        translationY = if (enabled) (1f - progress.value) * 12.dp.toPx() else 0f
+    }
 }
 
 /** Motion exists only while the activity is resumed; system-disabled animations stay static. */
 @Composable
-private fun orbitAngle(): Float {
+private fun orbitAngle(): State<Float> {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     var active by remember {
         mutableStateOf(lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
@@ -88,16 +153,14 @@ private fun orbitAngle(): Float {
         lifecycle.addObserver(observer)
         onDispose { lifecycle.removeObserver(observer) }
     }
-    if (!active || !motion) return 35f
+    if (!active || !motion || !LocalPlayfulMotion.current) return rememberUpdatedState(35f)
     val transition = rememberInfiniteTransition(label = "connection orbit")
-    val angle by
-        transition.animateFloat(
-            0f,
-            360f,
-            infiniteRepeatable(tween(12000, easing = LinearEasing)),
-            label = "orbit rotation",
-        )
-    return angle
+    return transition.animateFloat(
+        0f,
+        360f,
+        infiniteRepeatable(tween(12000, easing = LinearEasing)),
+        label = "orbit rotation",
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -134,7 +197,7 @@ fun ConnectionHero(name: String, connected: Boolean, status: String) {
                         radius = size.minDimension * 0.43f,
                         style = Stroke(1.dp.toPx()),
                     )
-                    rotate(angle) {
+                    rotate(angle.value) {
                         drawArc(
                             Brush.sweepGradient(
                                 listOf(
@@ -236,9 +299,21 @@ fun SectionHeading(title: String, subtitle: String) {
 }
 
 @Composable
-fun NavGlyph(index: Int) {
+fun NavGlyph(index: Int, selected: Boolean = false) {
+    val motion = LocalPlayfulMotion.current && ValueAnimator.areAnimatorsEnabled()
+    val scale by
+        animateFloatAsState(
+            targetValue = if (selected) 1.12f else 1f,
+            animationSpec = if (motion) spring(dampingRatio = 0.55f, stiffness = 500f) else snap(),
+            label = "navigation selection",
+        )
     val color = LocalContentColor.current
-    Canvas(Modifier.size(24.dp)) {
+    Canvas(
+        Modifier.size(24.dp).graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        }
+    ) {
         val stroke = Stroke(2.dp.toPx(), cap = StrokeCap.Round)
         when (index) {
             0 -> {

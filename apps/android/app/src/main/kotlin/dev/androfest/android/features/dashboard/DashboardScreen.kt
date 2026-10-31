@@ -196,7 +196,7 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
                         NavigationBarItem(
                             selected = section == index,
                             onClick = { section = index },
-                            icon = { NavGlyph(index) },
+                            icon = { NavGlyph(index, selected = section == index) },
                             label = { Text(title) },
                         )
                     }
@@ -206,6 +206,7 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
             LazyColumn(
                 modifier =
                     Modifier.fillMaxSize()
+                        .sectionEntrance(section)
                         .padding(insets)
                         .wrapContentWidth(Alignment.CenterHorizontally)
                         .widthIn(max = 680.dp)
@@ -622,6 +623,7 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
                     }
                 }
                 if (section == 2) {
+                    item { Panel("Make it yours") { MotionSettings() } }
                     item { PhoneAccessCard() }
                     item {
                         Panel("Pairing") {

@@ -10,14 +10,20 @@ enum FestTheme {
 }
 
 struct ConnectionOrbit: View {
+    @Environment(\.twinviaPlayfulMotion) private var playfulMotion
     let connected: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var phase
     @State private var visible = false
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 24, paused: reduceMotion || !visible)) { timeline in
+        TimelineView(
+            .animation(
+                minimumInterval: 1.0 / 24, paused: reduceMotion || !playfulMotion || !visible || phase != .active)
+        ) {
+            timeline in
             let angle =
-                reduceMotion
+                reduceMotion || !playfulMotion
                 ? 35 : timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 12) * 30
             ZStack {
                 Circle().fill(FestTheme.violet.opacity(0.10))
@@ -34,6 +40,7 @@ struct ConnectionOrbit: View {
                     .padding(7).rotationEffect(.degrees(angle))
                 Image(systemName: connected ? "iphone.radiowaves.left.and.right" : "iphone")
                     .font(.system(size: 28, weight: .medium)).foregroundStyle(.white)
+                    .contentTransition(reduceMotion || !playfulMotion ? .identity : .symbolEffect(.replace.offUp))
             }
         }
         .frame(width: 84, height: 84)
@@ -47,7 +54,12 @@ struct FestCard<Content: View>: View {
     @ViewBuilder var content: Content
     var body: some View {
         content.padding(16).frame(maxWidth: .infinity, alignment: .leading)
-            .background(FestTheme.surface, in: RoundedRectangle(cornerRadius: 20))
+            .background(
+                LinearGradient(
+                    colors: [FestTheme.surface, FestTheme.surface.opacity(0.88)], startPoint: .topLeading,
+                    endPoint: .bottomTrailing),
+                in: RoundedRectangle(cornerRadius: 20)
+            )
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(.white.opacity(0.08), lineWidth: 1))
     }
 }
@@ -59,6 +71,7 @@ struct TrayView: View {
     @ObservedObject private var controls: DeviceControls
     @ObservedObject private var calls: HandsFreeController
     @ObservedObject private var transfers: FileTransferController
+    @AppStorage("playfulMotion") private var playfulMotion = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var tab = 0
 
@@ -143,16 +156,11 @@ struct TrayView: View {
             }.buttonStyle(.borderless).padding(.horizontal, 22).padding(.vertical, 12)
         }
         .frame(width: 400, height: 660)
-        .background {
-            ZStack(alignment: .topTrailing) {
-                FestTheme.background
-                Ellipse().fill(FestTheme.violet.opacity(0.12)).frame(width: 290, height: 220)
-                    .blur(radius: 55).offset(x: 90, y: -100)
-            }
-        }
+        .background { AuroraBackdrop() }
         .preferredColorScheme(.dark).tint(FestTheme.violet)
         .groupBoxStyle(FestGroupStyle())
-        .animation(reduceMotion ? nil : .snappy(duration: 0.22), value: tab)
+        .animation(reduceMotion || !playfulMotion ? nil : .snappy(duration: 0.22), value: tab)
+        .modifier(TwinviaMotion())
         .task { await model.refreshNotificationStatus() }
 
     }
@@ -232,7 +240,7 @@ struct TrayView: View {
                 } label: {
                     quickTile("Send file", icon: "arrow.up.doc")
                 }
-            }.buttonStyle(.plain)
+            }.buttonStyle(FestTileButtonStyle())
             HStack(spacing: 12) {
                 Button {
                     model.dashboardSection = 4; showDashboard()
@@ -244,7 +252,7 @@ struct TrayView: View {
                 } label: {
                     quickTile("Call history", icon: "clock.arrow.circlepath")
                 }
-            }.buttonStyle(.plain)
+            }.buttonStyle(FestTileButtonStyle())
             Button("Stop phone ringer") { controls.perform(DeviceCommand(action: .stopRinging)) }
                 .buttonStyle(.borderless).disabled(!canControl)
             if !controls.message.isEmpty { Text(controls.message).font(.caption).foregroundStyle(.secondary) }

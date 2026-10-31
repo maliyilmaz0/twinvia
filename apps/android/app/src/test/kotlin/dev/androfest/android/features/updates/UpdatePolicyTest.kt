@@ -8,6 +8,37 @@ import org.junit.Test
 
 class UpdatePolicyTest {
     @Test
+    fun `APK updates must preserve package identity signer and forward version`() {
+        fun validate(
+            pkg: String = "dev.twinvia",
+            build: Long = 12,
+            expected: Long = 12,
+            installed: Set<String> = setOf("trusted"),
+            candidate: Set<String> = setOf("trusted"),
+        ) =
+            UpdatePolicy.validateApkIdentity(
+                "dev.twinvia",
+                11,
+                pkg,
+                build,
+                expected,
+                installed,
+                candidate,
+            )
+        validate()
+        for (failure in
+            listOf<() -> Unit>(
+                { validate(pkg = "other.app") },
+                { validate(build = 11) },
+                { validate(build = 13) },
+                { validate(candidate = setOf("attacker")) },
+                { validate(candidate = emptySet()) },
+                { validate(installed = emptySet()) },
+                { validate(candidate = setOf("trusted", "extra")) },
+            )) assertThrows(IllegalArgumentException::class.java) { failure() }
+    }
+
+    @Test
     fun `only authentic bounded release metadata is accepted`() {
         val pair = KeyPairGenerator.getInstance("Ed25519").generateKeyPair()
         val pub = Base64.getEncoder().encodeToString(pair.public.encoded.takeLast(32).toByteArray())

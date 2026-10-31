@@ -15,6 +15,27 @@ data class UpdateManifest(val version: String, val build: Long, val android: Upd
 
 /** Only release metadata signed by our offline Ed25519 identity can authorize a download. */
 object UpdatePolicy {
+    fun validateApkIdentity(
+        expectedPackage: String,
+        installedBuild: Long,
+        candidatePackage: String,
+        candidateBuild: Long,
+        signedBuild: Long,
+        installedSigners: Set<String>,
+        candidateSigners: Set<String>,
+    ) {
+        require(
+            candidatePackage == expectedPackage &&
+                candidateBuild == signedBuild &&
+                candidateBuild > installedBuild
+        ) {
+            "APK identity/version mismatch."
+        }
+        require(installedSigners.isNotEmpty() && installedSigners == candidateSigners) {
+            "This APK uses a different signing certificate. The installed preview cannot be updated with it; your data has been preserved."
+        }
+    }
+
     fun verify(bytes: ByteArray, signature: String, publicKey: String): UpdateManifest {
         require(bytes.size in 1..65_536) { "Invalid update metadata size." }
         val raw = Base64.getDecoder().decode(publicKey)

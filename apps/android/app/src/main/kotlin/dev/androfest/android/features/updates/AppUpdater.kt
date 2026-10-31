@@ -205,19 +205,17 @@ class AppUpdater(private val context: Context) {
         val installed = context.packageManager.getPackageInfo(context.packageName, flags)
         val candidate =
             context.packageManager.getPackageArchiveInfo(file.path, flags) ?: error("Invalid APK.")
-        check(
-            candidate.packageName == context.packageName &&
-                candidate.longVersionCode == next.build &&
-                candidate.longVersionCode > installed.longVersionCode
-        ) {
-            "APK identity/version mismatch."
-        }
         fun signers(info: android.content.pm.PackageInfo) =
-            info.signingInfo?.apkContentsSigners?.map { it.toCharsString() }?.toSet()
-        val trusted = signers(installed)
-        check(!trusted.isNullOrEmpty() && trusted == signers(candidate)) {
-            "This APK uses a different signing certificate. The installed preview cannot be updated with it; your data has been preserved."
-        }
+            info.signingInfo?.apkContentsSigners?.map { it.toCharsString() }?.toSet() ?: emptySet()
+        UpdatePolicy.validateApkIdentity(
+            context.packageName,
+            installed.longVersionCode,
+            candidate.packageName,
+            candidate.longVersionCode,
+            next.build,
+            signers(installed),
+            signers(candidate),
+        )
     }
 
     private fun launch(message: String, operation: suspend () -> Unit) {
