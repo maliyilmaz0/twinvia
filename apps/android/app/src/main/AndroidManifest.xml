@@ -60,6 +60,7 @@
             android:name=".core.connection.BridgeConnectionService"
             android:exported="false"
             android:foregroundServiceType="connectedDevice" />
+        <receiver android:name=".features.updates.UpdateInstallReceiver" android:exported="false" />
         <receiver android:name=".features.remote.StopRemoteControlReceiver" android:exported="false" />
         <service
             android:name=".features.remote.RemoteAccessibilityService"

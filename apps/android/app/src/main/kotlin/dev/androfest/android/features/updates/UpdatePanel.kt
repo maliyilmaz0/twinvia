@@ -18,16 +18,21 @@ fun UpdatePanel(updater: AppUpdater) {
         Text(state.message)
         if (state.busy) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = updater::check, enabled = !state.busy) {
+            OutlinedButton(onClick = updater::check, enabled = !state.busy && !state.installing) {
                 Text("Check for updates")
             }
-            if (state.version != null)
+            if (state.version != null && (!state.installing || state.ready))
                 Button(
                     onClick = { if (state.ready) updater.install(context) else updater.download() },
                     enabled = !state.busy,
                 ) {
-                    Text(if (state.ready) "Install update" else "Download ${state.version}")
+                    Text(if (state.ready) "Continue installation" else "Download ${state.version}")
                 }
+        }
+        if (state.installing) {
+            OutlinedButton(onClick = updater::cancelInstallation, enabled = !state.busy) {
+                Text("Cancel installation")
+            }
         }
         Row {
             Checkbox(

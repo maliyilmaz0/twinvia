@@ -46,7 +46,7 @@ struct UpdateSettingsView: View {
                 }
                 Toggle(
                     "Check automatically",
-                    isOn: Binding(get: { updater.automaticChecks }, set: updater.setAutomaticChecks))
+                    isOn: Binding(get: { updater.automaticChecks }, set: { updater.setAutomaticChecks($0) }))
             }.padding(12)
         }
     }

@@ -10,7 +10,7 @@ The feed is `https://github.com/maliyilmaz0/twinvia/releases/latest/download/app
 
 ## Android
 
-**Settings → Updates** checks the same stable channel. The app verifies a detached Ed25519 signature over `Twinvia Android Update v1\0` plus the exact manifest bytes. It validates the GitHub repository/asset URL, signed byte count, SHA-256, package name, higher version code and the installed signing certificate before opening Android's installer. Downloads use app-private cache storage and a narrowly scoped FileProvider grant. Android may first ask the user to allow installations from Twinvia. Installation always goes through the system confirmation UI.
+**Settings → Updates** checks the same stable channel. The app verifies a detached Ed25519 signature over `Twinvia Android Update v1\0` plus the exact manifest bytes. It validates the GitHub repository/asset URL, signed byte count, SHA-256, package name, higher version code and the installed signing certificate before opening Android's installer. Downloads use app-private cache storage. After revalidation, bytes enter an OS-owned PackageInstaller session restricted to Twinvia, with user action explicitly required. No APK content URI is shared with a generic intent handler. Status callbacks target a non-exported receiver and must match the pending session ID. Android may first ask the user to allow installations from Twinvia. Select **Continue installation** when Android confirmation is ready; only that foreground tap opens the system confirmation UI. A pending installation can be canceled and retried after a process interruption.
 
 Checks on app launch are opt-in. No phone connection or ADB is needed. Failures leave the installed app and pairing data intact.
 

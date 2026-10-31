@@ -2,10 +2,10 @@ package dev.androfest.android.features.updates
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
-import androidx.core.content.FileProvider
 import dev.androfest.android.BuildConfig
 import java.io.File
 import java.net.URL
@@ -19,6 +19,7 @@ data class UpdateState(
     val busy: Boolean = false,
     val version: String? = null,
     val ready: Boolean = false,
+    val installing: Boolean = false,
 )
 
 class AppUpdater(private val context: Context) {
@@ -26,6 +27,7 @@ class AppUpdater(private val context: Context) {
     private var job: Job? = null
     private var manifest: UpdateManifest? = null
     private var apk: File? = null
+    private var pendingConfirmation: Intent? = null
     private val _state = MutableStateFlow(UpdateState())
     val state = _state.asStateFlow()
     private val preferences = context.getSharedPreferences("updates", Context.MODE_PRIVATE)
@@ -36,11 +38,21 @@ class AppUpdater(private val context: Context) {
         }
 
     init {
-        if (checkOnLaunch) check()
+        if (UpdateInstaller.activeSession(context) != null) {
+            _state.value =
+                UpdateState(
+                    "An installation is pending. Cancel it to retry if confirmation was interrupted.",
+                    installing = true,
+                )
+        } else if (checkOnLaunch) check()
     }
 
     fun check() =
         launch("Checking for updates…") {
+            check(UpdateInstaller.activeSession(context) == null) {
+                "Finish the pending installation first."
+            }
+            pendingConfirmation = null
             val base = "https://github.com/maliyilmaz0/twinvia/releases/latest/download/"
             val bytes = fetch(base + "update-manifest.json", 65_536)
             val signature = fetch(base + "update-manifest.sig", 256).decodeToString()
@@ -104,6 +116,14 @@ class AppUpdater(private val context: Context) {
 
     fun install(activity: Context) =
         launch("Preparing Android installer…") {
+            pendingConfirmation?.let { confirmation ->
+                activity.startActivity(confirmation)
+                pendingConfirmation = null
+                return@launch
+            }
+            check(UpdateInstaller.activeSession(context) == null) {
+                "Waiting for Android installation confirmation."
+            }
             val file = requireNotNull(apk)
             val next = requireNotNull(manifest)
             withContext(Dispatchers.IO) { validate(file, next) }
@@ -121,23 +141,53 @@ class AppUpdater(private val context: Context) {
                         ready = true,
                     )
             } else {
-                val uri =
-                    FileProvider.getUriForFile(context, "${context.packageName}.clipboard", file)
-                activity.startActivity(
-                    Intent(Intent.ACTION_VIEW)
-                        .setDataAndType(uri, "application/vnd.android.package-archive")
-                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                )
                 _state.value =
                     UpdateState(
-                        "Confirm installation in Android's installer.",
+                        "Waiting for Android. Select Continue installation when confirmation is ready.",
                         version = next.version,
-                        ready = true,
+                        installing = true,
                     )
+                withContext(Dispatchers.IO) {
+                    UpdateInstaller.stage(context, file, next.android.size)
+                }
             }
         }
 
+    fun cancelInstallation() {
+        UpdateInstaller.cancel(context)
+        pendingConfirmation = null
+        _state.value = UpdateState("Installation canceled. Check for updates to retry.")
+    }
+
+    internal fun installationResult(intent: Intent) {
+        when (intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)) {
+            PackageInstaller.STATUS_PENDING_USER_ACTION -> {
+                pendingConfirmation =
+                    intent.getParcelableExtra(Intent.EXTRA_INTENT, Intent::class.java)
+                _state.value =
+                    _state.value.copy(
+                        message = "Android confirmation is ready. Select Continue installation.",
+                        ready = pendingConfirmation != null,
+                        installing = true,
+                        version = _state.value.version ?: "update",
+                    )
+            }
+            PackageInstaller.STATUS_SUCCESS -> {
+                pendingConfirmation = null
+                _state.value = UpdateState("Update installed. Reopen Twinvia to continue.")
+            }
+            else -> {
+                pendingConfirmation = null
+                _state.value =
+                    UpdateState(
+                        "Installation was canceled or rejected. Check for updates to retry."
+                    )
+            }
+        }
+    }
+
     private fun validate(file: File, next: UpdateManifest) {
+        check(file.length() == next.android.size) { "Update size mismatch." }
         val digest = MessageDigest.getInstance("SHA-256")
         file.inputStream().use { input ->
             val bytes = ByteArray(65_536)
