@@ -63,6 +63,6 @@ Without a phone, validate compilation, signatures, protocol tests and the Mac wi
 
 ## Playful interface checks
 
-Both platforms expose **Playful motion** in settings (Mac: General → Make it yours; Android: Settings → Make it yours). The saved preference disables decorative motion independently of bridge operation. System Reduce Motion / disabled Android animations take priority. Connection text and icons remain available in the static state. Android stops the orbit while the activity is not resumed; Mac ambient timelines pause outside active/visible presentation.
+Both platforms expose **Playful motion** in settings (Mac: General → Make it yours; Android: Settings → Appearance). The saved preference disables decorative motion independently of bridge operation. System Reduce Motion / disabled Android animations take priority. Connection text and icons remain available in the static state. Android stops the orbit while the activity is not resumed; Mac ambient timelines pause outside active/visible presentation.
 
 Validate navigation, focus, smallest supported window, larger text, and the motion toggle before claiming UI verification. `AppearanceSnapshotTests` renders the real Mac launchpad at a constrained width without a phone; set `TWINVIA_UI_SNAPSHOTS` to a local artifact directory to save that render. This does not replace live desktop or hardware tests.

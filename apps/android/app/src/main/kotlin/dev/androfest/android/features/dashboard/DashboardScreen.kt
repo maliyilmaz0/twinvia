@@ -358,6 +358,7 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
                             "Permissions, privacy, and notification preferences.",
                         )
                     }
+                    item { Panel("Appearance") { MotionSettings() } }
                     item {
                         Panel("Notifications") {
                             Text(
@@ -623,7 +624,6 @@ fun DashboardScreen(model: DashboardViewModel, testNotification: () -> Unit, sca
                     }
                 }
                 if (section == 2) {
-                    item { Panel("Make it yours") { MotionSettings() } }
                     item { PhoneAccessCard() }
                     item {
                         Panel("Pairing") {

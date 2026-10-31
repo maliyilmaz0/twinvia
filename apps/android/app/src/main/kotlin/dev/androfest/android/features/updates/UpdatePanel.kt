@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun UpdatePanel(updater: AppUpdater) {
     val state by updater.state.collectAsStateWithLifecycle()
@@ -17,7 +18,10 @@ fun UpdatePanel(updater: AppUpdater) {
         Text("Software updates", style = MaterialTheme.typography.titleMedium)
         Text(state.message)
         if (state.busy) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             OutlinedButton(onClick = updater::check, enabled = !state.busy && !state.installing) {
                 Text("Check for updates")
             }
