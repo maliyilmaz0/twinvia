@@ -144,6 +144,8 @@ struct MirrorView: View {
 
                     }
                 }.frame(maxWidth: .infinity, maxHeight: .infinity)
+                    // Never retain a disappearing private screen for a decorative transition.
+                    .transaction { $0.animation = nil }
             }
             Divider()
             HStack(spacing: 22) {
