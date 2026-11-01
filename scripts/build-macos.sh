@@ -20,7 +20,8 @@ for index, relative in enumerate(('.artifacts/xcode/Build/Products/Debug/Twinvia
             shutil.move(str(path),str(target/name))
 PY
 app_resources="$TWINVIA_ROOT/.artifacts/xcode/Build/Products/Debug/Twinvia.app/Contents/Resources"
-mkdir -p "$app_resources"
+mkdir -p "$app_resources/ThirdPartyNotices"
+cp "$TWINVIA_ROOT/vendor/sparkle/LICENSE" "$app_resources/ThirdPartyNotices/Sparkle.txt"
 ditto "$TWINVIA_ROOT/.artifacts/bluetooth/TwinviaBluetooth.app" "$app_resources/TwinviaBluetooth.app"
 python3 "$TWINVIA_ROOT/scripts/sign-macos.py" "$TWINVIA_ROOT/.artifacts/xcode/Build/Products/Debug/Twinvia.app"
 ditto "$TWINVIA_ROOT/.artifacts/xcode/Build/Products/Debug/Twinvia.app" "$TWINVIA_ROOT/.artifacts/macos/Twinvia.app"

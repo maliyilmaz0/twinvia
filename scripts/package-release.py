@@ -12,7 +12,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def inspect_mac(path: Path) -> str:
+def inspect_mac(path: Path, expected_build: str | None = None) -> str:
     with ZipFile(path) as archive:
         names = set(archive.namelist())
         for name in names:
@@ -28,6 +28,8 @@ def inspect_mac(path: Path) -> str:
         info = plistlib.loads(archive.read("Twinvia.app/Contents/Info.plist"))
         if info.get("CFBundleIdentifier") != "dev.androfest.macos":
             raise ValueError("Unexpected Mac bundle identity")
+        if expected_build is not None and info.get("CFBundleVersion") != expected_build:
+            raise ValueError("Mac artifact build does not match source")
         executable = info.get("CFBundleExecutable")
         if executable not in {"Twinvia", "Androfest"} or f"Twinvia.app/Contents/MacOS/{executable}" not in names:
             raise ValueError("Mac application executable is missing or unexpected")
@@ -46,17 +48,21 @@ def package(inputs: Path, output: Path, run_id: str, commit: str, repository: st
         raise ValueError("Invalid source run or commit")
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
         raise ValueError("Invalid repository")
-    version = plistlib.loads((ROOT / "apps/macos/Configuration/Info.plist").read_bytes())["CFBundleShortVersionString"]
+    mac_info = plistlib.loads((ROOT / "apps/macos/Configuration/Info.plist").read_bytes())
+    version = mac_info["CFBundleShortVersionString"]
     android_config = (ROOT / "apps/android/app/build.gradle.kts").read_text()
     android_version = re.search(r'versionName\s*=\s*"([^"]+)"', android_config)
     if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version) or android_version is None or android_version[1] != version:
         raise ValueError("Platform source versions do not agree")
+    android_build = re.search(r"versionCode\s*=\s*([0-9]+)", android_config)
+    if android_build is None or str(int(android_build[1])) != mac_info["CFBundleVersion"]:
+        raise ValueError("Platform source build numbers do not agree")
     mac = inputs / "macos/Twinvia-macos.zip"
     apk = inputs / "android/.artifacts/android/Twinvia-debug.apk"
     jar = inputs / "android/.artifacts/android/TwinviaClipboardHelper.jar"
     if not jar.is_file():
         jar = inputs / "android/.artifacts/android/AndrofestClipboardHelper.jar"
-    if inspect_mac(mac) != version:
+    if inspect_mac(mac, expected_build=mac_info["CFBundleVersion"]) != version:
         raise ValueError("Mac artifact version does not match source")
     with ZipFile(apk) as archive:
         if not {"AndroidManifest.xml", "classes.dex"}.issubset(archive.namelist()):
@@ -85,7 +91,7 @@ def package(inputs: Path, output: Path, run_id: str, commit: str, repository: st
         "source_commit": commit, "ci_run_id": run_id,
         "ci_run_url": f"https://github.com/{repository}/actions/runs/{run_id}",
         "macos": {"architecture": "arm64", "signing": "ad-hoc", "notarized": False},
-        "android": {"variant": "debug", "signing": "CI debug key"},
+        "android": {"variant": "debug", "signing": "persistent distribution key for trusted main CI"},
     }
     (output / "build-info.json").write_text(json.dumps(metadata, indent=2) + "\n")
     files = sorted(output.iterdir())

@@ -8,6 +8,8 @@ final class NotificationPresenter: NSObject, UNUserNotificationCenterDelegate {
     #if DEBUG
         private(set) static var diagnostics = ["scheduled": 0, "replaySuppressed": 0, "duplicateSuppressed": 0]
     #endif
+    private var paused = false
+    private var pauseGeneration = UUID()
     var onError: ((String) -> Void)?
     var onSent: (() -> Void)?
     var onAction: ((DeviceCommand) -> Void)?
@@ -41,9 +43,23 @@ final class NotificationPresenter: NSObject, UNUserNotificationCenterDelegate {
         ])
     }
 
+    func setPaused(_ value: Bool) {
+        paused = value; pauseGeneration = UUID()
+        guard value else { return }
+        for delivery in deliveries.values { delivery.task.cancel() }
+        deliveries.removeAll(); deliveryTokens.removeAll(); latestActions.removeAll()
+        let generation = pauseGeneration
+        Task { @MainActor [weak self] in
+            let identifiers = await NotificationCenterSnapshot.mirroredNotificationIdentifiers()
+            guard let self, self.paused, self.pauseGeneration == generation else { return }
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers)
+        }
+    }
+
     @discardableResult
     func enqueue(_ notification: NotificationPosted) -> Task<Void, Never> {
         let decision = deliveryState.record(notification)
+        guard !paused else { return Task {} }
         if let actionToken = notification.actionToken {
             latestActions[notification.key] = (decision.revision, actionToken)
             if latestActions.count > 512, let key = latestActions.keys.first { latestActions.removeValue(forKey: key) }
@@ -79,12 +95,12 @@ final class NotificationPresenter: NSObject, UNUserNotificationCenterDelegate {
     func post(_ notification: NotificationPosted) async { await enqueue(notification).value }
 
     private func deliver(_ notification: NotificationPosted, token: UUID, revision: String) async {
-        guard deliveryTokens[notification.key] == token, !Task.isCancelled,
+        guard !paused, deliveryTokens[notification.key] == token, !Task.isCancelled,
             !mutedPackages.contains(notification.packageName)
         else { return }
         let center = UNUserNotificationCenter.current()
         let authorization = await NotificationCenterSnapshot.authorizationStatus()
-        guard deliveryTokens[notification.key] == token, !Task.isCancelled,
+        guard !paused, deliveryTokens[notification.key] == token, !Task.isCancelled,
             !mutedPackages.contains(notification.packageName)
         else { return }
         guard NotificationAuthorization.allowsDelivery(authorization) else {
@@ -130,7 +146,7 @@ final class NotificationPresenter: NSObject, UNUserNotificationCenterDelegate {
             defer { if let directory { try? FileManager.default.removeItem(at: directory) } }
             try await center.add(
                 UNNotificationRequest(identifier: Self.identifier(notification.key), content: content, trigger: nil))
-            if deliveryTokens[notification.key] != token || Task.isCancelled
+            if paused || deliveryTokens[notification.key] != token || Task.isCancelled
                 || mutedPackages.contains(notification.packageName)
             {
                 center.removeDeliveredNotifications(withIdentifiers: [Self.identifier(notification.key)])
@@ -193,7 +209,8 @@ final class NotificationPresenter: NSObject, UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        [.banner, .list, .sound]
+        let mirrored = notification.request.content.userInfo["notificationKey"] is String
+        return await MainActor.run { self.paused && mirrored ? [] : [.banner, .list, .sound] }
     }
 
     nonisolated static func identifier(_ key: String) -> String {
@@ -225,6 +242,6 @@ final class NotificationPresenter: NSObject, UNUserNotificationCenterDelegate {
             return latest.token
         }
         let command = DeviceCommand(action: action, text: text, key: key, actionToken: currentToken)
-        await MainActor.run { self.onAction?(command) }
+        await MainActor.run { if !self.paused { self.onAction?(command) } }
     }
 }

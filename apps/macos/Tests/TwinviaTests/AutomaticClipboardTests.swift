@@ -48,6 +48,21 @@ final class AutomaticClipboardTests: XCTestCase {
         clipboard.poll(); XCTAssertEqual(texts.count, 1)
         board.releaseGlobally()
     }
+    func testPrivacyBreakDropsBothDirectionsAndDoesNotReplayOnResume() {
+        let board = NSPasteboard(name: .init("twinvia-privacy-" + UUID().uuidString))
+        var sent: [String] = []
+        let clipboard = AutomaticClipboard(pasteboard: board, automaticallyPoll: false, canSend: { true }) {
+            sent.append($0); return UUID().uuidString
+        }
+        clipboard.setPaused(true)
+        board.clearContents(); board.setString("private local copy", forType: .string)
+        clipboard.poll(); clipboard.receive("private phone copy")
+        XCTAssertEqual(board.string(forType: .string), "private local copy")
+        clipboard.setPaused(false); clipboard.poll(); XCTAssertTrue(sent.isEmpty)
+        board.clearContents(); board.setString("new copy after break", forType: .string)
+        clipboard.poll(); XCTAssertEqual(sent, ["new copy after break"])
+        board.releaseGlobally()
+    }
     func testConcealedContentDoesNotSync() {
         let board = NSPasteboard(name: .init("twinvia-test-" + UUID().uuidString))
         var sent = 0

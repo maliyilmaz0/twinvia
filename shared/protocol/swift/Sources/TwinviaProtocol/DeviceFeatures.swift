@@ -19,6 +19,11 @@ public enum DeviceAction: String, Codable, Sendable, CaseIterable {
     case mediaNext = "media.next"
     case mediaPrevious = "media.previous"
     case remoteSnapshot = "remote.snapshot"
+    case remoteLANOpen = "remote.lan.open"
+    case remoteFastOpen = "remote.fast.open"
+    case remoteSnapshotDetail = "remote.snapshot.detail"
+    case remoteText = "remote.text"
+    case remoteKey = "remote.key"
     case remoteTap = "remote.tap"
     case remoteSwipe = "remote.swipe"
     case remoteBack = "remote.back"
@@ -73,6 +78,14 @@ public struct DeviceCommand: WirePayload {
             } else if text != nil {
                 throw ProtocolError.invalidPayload
             }
+        case .remoteText:
+            guard let text, !text.isEmpty, text.utf16.count <= 1024, key == nil, actionToken == nil else {
+                throw ProtocolError.invalidPayload
+            }
+        case .remoteKey:
+            guard text == nil, let key, ["backspace", "enter"].contains(key), actionToken == nil else {
+                throw ProtocolError.invalidPayload
+            }
         case .remoteTap, .remoteSwipe:
             guard text == nil, actionToken == nil, let key else { throw ProtocolError.invalidPayload }
             let parts = key.split(separator: ",", omittingEmptySubsequences: false)
@@ -102,20 +115,22 @@ public struct CommandResult: WirePayload {
     public let success: Bool
     public let message: String
     public let data: PhonePage?
+    public let channel: RemoteChannel?
     public let screen: RemoteScreen?
     public init(
         requestId: String, success: Bool, message: String, data: PhonePage? = nil,
-        screen: RemoteScreen? = nil
+        screen: RemoteScreen? = nil, channel: RemoteChannel? = nil
     ) {
         self.requestId = requestId; self.success = success; self.message = message; self.data = data
-        self.screen = screen
+        self.screen = screen; self.channel = channel
     }
     public func validate() throws {
         guard UUID(uuidString: requestId) != nil, !message.isEmpty, message.utf16.count <= 256,
-            success || (data == nil && screen == nil)
+            success || (data == nil && screen == nil && channel == nil)
         else { throw ProtocolError.invalidPayload }
         try data?.validate()
         try screen?.validate()
+        try channel?.validate()
     }
 }
 
@@ -127,7 +142,7 @@ public struct RemoteScreen: Codable, Sendable {
         self.jpegBase64 = jpegBase64; self.width = width; self.height = height
     }
     public func validate() throws {
-        guard (1...640).contains(width), (1...640).contains(height),
+        guard (1...2560).contains(width), (1...2560).contains(height), width * height <= 4_194_304,
             (1...180_000).contains(jpegBase64.count), jpegBase64.count.isMultiple(of: 4),
             let data = Data(base64Encoded: jpegBase64), data.count <= 135_000,
             data.starts(with: [0xFF, 0xD8, 0xFF])
@@ -145,13 +160,16 @@ public struct DeviceStatus: WirePayload, Equatable {
     public let mediaPlaying: Bool
     public let ringing: Bool
     public let call: PhoneCallState?
+    public let remoteViewing: Bool?
+    public let remoteControl: Bool?
     public init(
         batteryPercent: Int?, charging: Bool, locked: Bool, mediaTitle: String? = nil,
-        mediaArtist: String? = nil, mediaPlaying: Bool = false, ringing: Bool = false, call: PhoneCallState? = nil
+        mediaArtist: String? = nil, mediaPlaying: Bool = false, ringing: Bool = false, call: PhoneCallState? = nil,
+        remoteViewing: Bool? = nil, remoteControl: Bool? = nil
     ) {
         self.batteryPercent = batteryPercent; self.charging = charging; self.locked = locked
         self.mediaTitle = mediaTitle; self.mediaArtist = mediaArtist; self.mediaPlaying = mediaPlaying;
-        self.ringing = ringing; self.call = call
+        self.ringing = ringing; self.call = call; self.remoteViewing = remoteViewing; self.remoteControl = remoteControl
     }
     public func validate() throws {
         try call?.validate()

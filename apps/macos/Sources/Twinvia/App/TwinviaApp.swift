@@ -44,11 +44,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func application(_ application: NSApplication, open urls: [URL]) {
         guard let model = Self.model else { return }
         urls.forEach(model.handleURL)
-        DashboardWindow.show(model: model)
+        if urls.contains(where: { $0.host == "screen" }) {
+            MirrorWindow.show(model: model)
+        } else {
+            DashboardWindow.show(model: model)
+        }
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApplication.shared.setActivationPolicy(.accessory)
+        _ = AppUpdater.shared
         let center = NSWorkspace.shared.notificationCenter
         workspaceObservers = [
             center.addObserver(forName: NSWorkspace.willSleepNotification, object: nil, queue: .main) { _ in

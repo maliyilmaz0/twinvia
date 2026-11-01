@@ -17,6 +17,23 @@ if not identity:
 # Sign libraries inside-out; separately signed helper apps retain their identity.
 for library in sorted((app / "Contents/MacOS").glob("*.dylib")):
     subprocess.run(['codesign', '--force', '--sign', identity, str(library)], check=True)
+# Xcode may strip parts of a binary framework signature while embedding it.
+# Re-sign its Mach-O executables and nested services from the inside out.
+frameworks = app / "Contents/Frameworks"
+if frameworks.exists():
+    targets = []
+    for entry in frameworks.rglob('*'):
+        if entry.is_symlink():
+            continue
+        if entry.is_file():
+            with entry.open('rb') as stream:
+                magic = stream.read(4)
+            if magic in (b'\xcf\xfa\xed\xfe', b'\xce\xfa\xed\xfe', b'\xca\xfe\xba\xbe', b'\xbe\xba\xfe\xca'):
+                targets.append(entry)
+        elif entry.suffix in {'.app', '.xpc', '.framework'}:
+            targets.append(entry)
+    for target in sorted(targets, key=lambda p: len(p.parts), reverse=True):
+        subprocess.run(['codesign', '--force', '--sign', identity, '--preserve-metadata=entitlements', str(target)], check=True)
 # Do not use --deep to overwrite nested helper signatures while signing.
 subprocess.run(['codesign', '--force', '--sign', identity, str(app)], check=True)
 subprocess.run(['codesign', '--verify', '--deep', '--strict', str(app)], check=True)

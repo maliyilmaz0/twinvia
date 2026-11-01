@@ -13,6 +13,7 @@ class TwinviaApplication : Application() {
         RemoteControlSession.stop(this)
     }
 
+    val updates by lazy { dev.androfest.android.features.updates.AppUpdater(this) }
     val deviceIdentity by lazy { DeviceIdentity(this) }
     val notifications by lazy { NotificationRepository(this, deviceIdentity) }
     val bridge by lazy { BridgeRepository(this, deviceIdentity, notifications) }

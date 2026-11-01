@@ -11,6 +11,9 @@ ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location("release_packaging", ROOT / "scripts/package-release.py")
 release = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(release)
+SOURCE_INFO = plistlib.loads((ROOT / "apps/macos/Configuration/Info.plist").read_bytes())
+VERSION = SOURCE_INFO["CFBundleShortVersionString"]
+BUILD = SOURCE_INFO["CFBundleVersion"]
 
 
 class ReleasePackagingTests(unittest.TestCase):
@@ -31,13 +34,13 @@ class ReleasePackagingTests(unittest.TestCase):
             archive.writestr("classes.dex", b"test fixture")
         (android / "private-capture.txt").write_text("must not ship")
 
-    def write_mac(self, version="0.9.0", extra=None, helper=True, legacy=False):
+    def write_mac(self, version=VERSION, extra=None, helper=True, legacy=False, build=BUILD):
         executable = "Androfest" if legacy else "Twinvia"
         helper_name = "Androfest" if legacy else "Twinvia"
         with ZipFile(self.mac, "w") as archive:
             archive.writestr("Twinvia.app/Contents/Info.plist", plistlib.dumps({
                 "CFBundleIdentifier": "dev.androfest.macos", "CFBundleShortVersionString": version,
-                "CFBundleExecutable": executable,
+                "CFBundleExecutable": executable, "CFBundleVersion": build,
             }))
             archive.writestr(f"Twinvia.app/Contents/MacOS/{executable}", b"test fixture")
             if helper:
@@ -49,14 +52,14 @@ class ReleasePackagingTests(unittest.TestCase):
         return release.package(self.inputs, self.output, run_id, "a" * 40, "example/twinvia")
 
     def test_only_explicit_assets_ship_and_checksums_match(self):
-        self.assertEqual(self.package(), "0.9.0")
+        self.assertEqual(self.package(), VERSION)
         self.assertEqual(len(list(self.output.iterdir())), 5)
         for line in (self.output / "SHA256SUMS").read_text().splitlines():
             expected, name = line.split("  ")
             self.assertEqual(hashlib.sha256((self.output / name).read_bytes()).hexdigest(), expected)
         info = json.loads((self.output / "build-info.json").read_text())
         self.assertFalse(info["macos"]["notarized"])
-        with ZipFile(self.output / "Twinvia-0.9.0-clipboard-helper.zip") as kit:
+        with ZipFile(self.output / f"Twinvia-{VERSION}-clipboard-helper.zip") as kit:
             self.assertEqual(len(kit.namelist()), 3)
             self.assertNotIn("private-capture.txt", " ".join(kit.namelist()))
         with self.assertRaises(FileExistsError):
@@ -71,7 +74,7 @@ class ReleasePackagingTests(unittest.TestCase):
                 self.assertFalse(self.output.exists())
 
     def test_missing_helper_and_mismatched_version_are_rejected(self):
-        for options in [{"helper": False}, {"version": "0.8.0"}]:
+        for options in [{"helper": False}, {"version": "0.8.0"}, {"build": "10"}]:
             with self.subTest(options=options):
                 self.write_mac(**options)
                 with self.assertRaises(ValueError):
@@ -86,7 +89,7 @@ class ReleasePackagingTests(unittest.TestCase):
         self.write_mac(legacy=True)
         android = self.inputs / "android/.artifacts/android"
         (android / "TwinviaClipboardHelper.jar").rename(android / "AndrofestClipboardHelper.jar")
-        self.assertEqual(self.package(), "0.9.0")
+        self.assertEqual(self.package(), VERSION)
 
 
 if __name__ == "__main__":

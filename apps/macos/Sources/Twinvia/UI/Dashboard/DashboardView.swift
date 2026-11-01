@@ -8,6 +8,8 @@ struct DashboardView: View {
     @ObservedObject private var transfers: FileTransferController
     @State private var showFilePicker = false
     @State private var dropTargeted = false
+    @AppStorage("playfulMotion") private var playfulMotion = true
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
     private let accent = FestTheme.violet
 
@@ -54,6 +56,8 @@ struct DashboardView: View {
                 }.pickerStyle(.segmented)
 
                 if model.dashboardSection == 0 {
+                    PrivacyBreakView(privacy: model.privacy)
+                    FeatureLaunchpad { model.dashboardSection = $0 }
                     GroupBox("Phone connection") {
                         HStack(alignment: .top, spacing: 24) {
                             if let invitation = bridge.invitation,
@@ -167,6 +171,9 @@ struct DashboardView: View {
                 }
                 if model.dashboardSection == 0 {
                     DailyFeaturesView(controls: model.controls, bridge: bridge, clipboard: model.clipboard)
+                    UpdateSettingsView()
+                    MotionSettingsView()
+                    StartupSettingsView()
                 }
                 if model.dashboardSection == 2 {
                     CallsView(model: model, calls: model.calls)
@@ -241,10 +248,12 @@ struct DashboardView: View {
             }
         }
         .frame(minWidth: 700, minHeight: 580)
-        .background(FestTheme.background)
+        .background { AuroraBackdrop() }
         .preferredColorScheme(.dark)
         .groupBoxStyle(FestGroupStyle())
         .tint(accent)
+        .animation(reduceMotion || !playfulMotion ? nil : .easeInOut(duration: 0.2), value: model.dashboardSection)
+        .modifier(TwinviaMotion())
         .fileImporter(isPresented: $showFilePicker, allowedContentTypes: [.item], allowsMultipleSelection: true) {
             switch $0 {
             case .success(let urls): model.selectFiles(urls)
