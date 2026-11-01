@@ -24,7 +24,9 @@ final class StartupSettings: ObservableObject {
         Task { @MainActor in
             defer { busy = false; refresh() }
             do {
-                if value { try service.register() } else { try await service.unregister() }
+                // Keep the non-Sendable service on MainActor on older macOS SDKs too.
+                // The synchronous API returns without waiting for process termination.
+                if value { try service.register() } else { try service.unregister() }
                 message = ""
             } catch { message = error.localizedDescription }
         }
