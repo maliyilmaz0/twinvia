@@ -7,6 +7,7 @@ import CryptoKit
 
 @MainActor
 final class DashboardModel: ObservableObject {
+    let privacy: PrivacyBreak
     let deviceID: String
     let deviceName = Host.current().localizedName ?? "Mac"
     let bridge: BridgeClient
@@ -17,6 +18,7 @@ final class DashboardModel: ObservableObject {
     let remoteControl: RemoteControlModel
     #if DEBUG
         private var remoteSmoke: RemoteSmokeTest?
+        private var remoteValidation: RemoteDeviceValidation?
     #endif
     let callAudio: CallAudioRelay
     let calls = HandsFreeController()
@@ -34,6 +36,11 @@ final class DashboardModel: ObservableObject {
     @Published var dashboardSection = 0
 
     init() {
+        let pause = PrivacyBreak(
+            savedUntil: UserDefaults.standard.object(forKey: "privacyBreakUntil") as? Date,
+            save: { UserDefaults.standard.set($0, forKey: "privacyBreakUntil") })
+        privacy = pause
+
         // Preferences migrate only at the composition root, never inside isolated session tests.
         if let address = UserDefaults.standard.string(forKey: "bluetoothPeerAddress") {
             UserDefaults.standard.set(address, forKey: "callBluetoothPeerAddress")
@@ -73,7 +80,10 @@ final class DashboardModel: ObservableObject {
                 guard let client else { throw TransferFailure("Phone disconnected.") }
                 return try client.sendCommand(command)
             })
-        remoteControl = RemoteControlModel { [weak client] command in
+        remoteControl = RemoteControlModel { [weak client, weak pause] command in
+            guard pause?.active != true else {
+                throw TransferFailure("Resume the privacy break before using the mirror.")
+            }
             guard let client else { throw TransferFailure("Phone disconnected.") }
             return try client.sendCommand(command)
         }
@@ -99,6 +109,13 @@ final class DashboardModel: ObservableObject {
                 guard let client else { throw TransferFailure("Phone disconnected.") }
                 return try client.sendCommand(DeviceCommand(action: .clipboardSet, text: text))
             })
+        #if DEBUG
+            if CommandLine.arguments.contains("--remote-device-validation") {
+                remoteValidation = RemoteDeviceValidation(
+                    remote: remoteControl, privacy: privacy, clipboard: clipboard,
+                    address: UserDefaults.standard.string(forKey: "callBluetoothPeerAddress"))
+            }
+        #endif
         transfers = FileTransferController(
             send: { [weak client] value in
                 guard let client else { throw TransferFailure("Phone disconnected.") }
@@ -109,9 +126,13 @@ final class DashboardModel: ObservableObject {
                 try client.sendFileChunk(chunk)
             })
         bridge.onConnected = { [weak self] in
+            self?.remoteControl.configure(
+                supportsDetail: self?.bridge.peerCapabilities.contains("remote.screen.v2") == true,
+                supportsLAN: self?.bridge.peerCapabilities.contains("remote.screen.lan") == true)
             self?.remoteControl.connected()
             #if DEBUG
                 self?.remoteSmoke?.connected()
+                self?.remoteValidation?.connected()
             #endif
             guard let self, self.bridge.peerCapabilities.contains("phone.browse") else { return }
             self.phoneData.load(.contacts); self.phoneData.load(.calls); self.phoneData.load(.files)
@@ -129,7 +150,7 @@ final class DashboardModel: ObservableObject {
             self?.callHandoff.disconnected(); self?.notificationPresenter.removeIncomingCall()
         }
         bridge.onDeviceStatus = { [weak self] in
-            self?.controls.receive($0); self?.receiveCallState($0.call)
+            self?.controls.receive($0); self?.receiveCallState($0.call); self?.remoteControl.updateSession($0)
         }
         bridge.onSharedText = { [weak self] in self?.clipboard.receive($0.text) }
         bridge.onCommandResult = { [weak self] in
@@ -173,11 +194,19 @@ final class DashboardModel: ObservableObject {
         bridge.onNotification = { [weak self] message in
             guard let self else { return }
             guard self.mutedApplications[message.payload.packageName] == nil else { return }
+            self.notificationPresenter.enqueue(message.payload)
+            guard !self.privacy.active else { return }
             self.recentNotifications.removeAll { $0.key == message.payload.key }
             self.recentNotifications.insert(message.payload, at: 0)
             self.recentNotifications = Array(self.recentNotifications.prefix(30))
-            self.notificationPresenter.enqueue(message.payload)
         }
+        privacy.onChange = { [weak self] paused in
+            guard let self else { return }
+            self.clipboard.setPaused(paused)
+            self.notificationPresenter.setPaused(paused)
+            if paused { self.recentNotifications.removeAll(); self.remoteControl.closeMirror() }
+        }
+        if privacy.active { privacy.onChange?(true) }
         bridge.onNotificationRemoved = { [weak self] key in
             self?.recentNotifications.removeAll { $0.key == key }
             self?.notificationPresenter.remove(key)
@@ -253,6 +282,7 @@ final class DashboardModel: ObservableObject {
     }
 
     func systemDidWake() {
+        privacy.refresh()
         calls.resumeAfterWake()
     }
 

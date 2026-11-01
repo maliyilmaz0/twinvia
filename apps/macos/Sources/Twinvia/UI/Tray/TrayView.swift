@@ -107,6 +107,7 @@ struct TrayView: View {
                         }
                     }
                     connectionCard
+                    PrivacyBreakView(privacy: model.privacy)
                     if let offer = transfers.incomingOffer {
                         FestCard {
                             VStack(alignment: .leading, spacing: 12) {

@@ -8,6 +8,7 @@ import Foundation
 /// Watches copy operations, applies remote text immediately and never echoes its own writes.
 @MainActor
 final class AutomaticClipboard: ObservableObject {
+    @Published private(set) var paused = false
     @Published private(set) var enabled: Bool
     @Published private(set) var status = "Clipboard sync waiting for connection"
     private let pasteboard: NSPasteboard
@@ -53,7 +54,20 @@ final class AutomaticClipboard: ObservableObject {
         enabled = value; saveEnabled(value)
         imageTask?.cancel(); imageTask = nil; lastImage = nil
         changeCount = pasteboard.changeCount; lastText = nil
-        status = value ? "Automatic clipboard sync enabled" : "Automatic clipboard sync disabled"
+        status =
+            paused
+            ? "Privacy break — clipboard sharing paused"
+            : value ? "Automatic clipboard sync enabled" : "Automatic clipboard sync disabled"
+    }
+
+    func setPaused(_ value: Bool) {
+        paused = value
+        imageTask?.cancel(); imageTask = nil; pending.removeAll(); latestRequest = nil
+        changeCount = pasteboard.changeCount; lastText = nil; lastImage = nil
+        status =
+            value
+            ? "Privacy break — clipboard sharing paused"
+            : enabled ? "Clipboard sharing resumed; copy something new" : "Automatic clipboard sync disabled"
     }
 
     func poll() {
@@ -64,7 +78,7 @@ final class AutomaticClipboard: ObservableObject {
             status = "Phone clipboard acknowledgement timed out"
         }
         pending = pending.filter { Date() < $0.value }
-        guard enabled else { changeCount = pasteboard.changeCount; return }
+        guard enabled, !paused else { changeCount = pasteboard.changeCount; return }
         guard canSend() else {
             changeCount = pasteboard.changeCount; status = "Clipboard sync waiting for connection"; return
         }
@@ -133,7 +147,7 @@ final class AutomaticClipboard: ObservableObject {
     func disconnected() { imageTask?.cancel(); imageTask = nil; pending.removeAll(); lastImage = nil }
 
     func receive(_ text: String) {
-        guard enabled, canSend(), !text.isEmpty, text.utf16.count <= 16_384 else { return }
+        guard enabled, !paused, canSend(), !text.isEmpty, text.utf16.count <= 16_384 else { return }
         guard pasteboard.string(forType: .string) != text else { lastText = text; return }
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)

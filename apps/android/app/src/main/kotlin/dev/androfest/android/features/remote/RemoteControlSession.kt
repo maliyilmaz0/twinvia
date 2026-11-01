@@ -124,6 +124,7 @@ object RemoteControlSession {
     @Synchronized
     fun stop(context: Context) {
         FastScreenServer.stop()
+        LanScreenServer.stop()
         generation++
         until = 0L
         _active.value = false

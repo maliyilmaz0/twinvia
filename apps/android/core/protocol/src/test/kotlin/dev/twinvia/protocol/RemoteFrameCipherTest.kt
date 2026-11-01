@@ -32,4 +32,32 @@ class RemoteFrameCipherTest {
             mac.seal(ByteArray(WireCodec.MAX_MESSAGE_BYTES + 1))
         }
     }
+
+    @org.junit.Test
+    fun `local endpoints are bounded canonical private IPv4 only`() {
+        val key = java.util.Base64.getEncoder().encodeToString(ByteArray(32) { 1 })
+        for (host in
+            listOf("10.0.0.1", "172.16.0.1", "172.31.255.254", "192.168.1.76")) RemoteChannel(
+                java.util.UUID.randomUUID().toString(),
+                key,
+                host,
+                54321,
+            )
+            .validate()
+        for (host in
+            listOf(
+                "example.com",
+                "127.0.0.1",
+                "8.8.8.8",
+                "172.32.0.1",
+                "192.168.001.2",
+                "192.168.1.999",
+                "192.168.1.2%wlan0",
+            )) org.junit.Assert.assertThrows(IllegalArgumentException::class.java) {
+            RemoteChannel(java.util.UUID.randomUUID().toString(), key, host, 54321).validate()
+        }
+        org.junit.Assert.assertThrows(IllegalArgumentException::class.java) {
+            RemoteChannel(java.util.UUID.randomUUID().toString(), key, "192.168.1.2", 80).validate()
+        }
+    }
 }

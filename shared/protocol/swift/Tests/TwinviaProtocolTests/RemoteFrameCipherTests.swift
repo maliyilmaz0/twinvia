@@ -24,4 +24,20 @@ final class RemoteFrameCipherTests: XCTestCase {
         XCTAssertEqual(try mac.open(phone.seal(Data("response".utf8))), Data("response".utf8))
         XCTAssertThrowsError(try mac.seal(Data(repeating: 0, count: WireCodec.maxMessageBytes + 1)))
     }
+    func testLocalScreenEndpointsRejectPublicNamesAndUnboundedPorts() throws {
+        let key = Data(repeating: 1, count: 32).base64EncodedString()
+        for host in ["10.0.0.1", "172.16.0.1", "172.31.255.254", "192.168.1.76"] {
+            try RemoteChannel(session: UUID().uuidString, key: key, host: host, port: 54321).validate()
+        }
+        for host in [
+            "example.com", "127.0.0.1", "8.8.8.8", "172.32.0.1", "192.168.001.2", "192.168.1.999", "192.168.1.2%en0",
+        ] {
+            XCTAssertThrowsError(
+                try RemoteChannel(session: UUID().uuidString, key: key, host: host, port: 54321).validate())
+        }
+        XCTAssertThrowsError(
+            try RemoteChannel(session: UUID().uuidString, key: key, host: "192.168.1.2", port: 80).validate())
+        XCTAssertThrowsError(try RemoteChannel(session: UUID().uuidString, key: key, host: "192.168.1.2").validate())
+    }
+
 }

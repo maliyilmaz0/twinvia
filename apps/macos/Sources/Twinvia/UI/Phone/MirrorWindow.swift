@@ -37,6 +37,8 @@ private final class MirrorWindowDelegate: NSObject, NSWindowDelegate {
 
 struct MirrorView: View {
     @ObservedObject private var remote: RemoteControlModel
+    @ObservedObject private var privacy: PrivacyBreak
+    @State private var zoom = 1.0
     @ObservedObject private var bridge: BridgeClient
     @AppStorage("playfulMotion") private var playfulMotion = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -46,8 +48,11 @@ struct MirrorView: View {
     @State private var showKeyboard = false
     @FocusState private var typingFocused: Bool
 
-    init(model: DashboardModel) { remote = model.remoteControl; bridge = model.bridge }
-    private var available: Bool { bridge.connected && bridge.peerCapabilities.contains("remote.screen") }
+    init(model: DashboardModel) { remote = model.remoteControl; bridge = model.bridge; privacy = model.privacy }
+    private var available: Bool {
+        bridge.connected && !privacy.active && bridge.peerCapabilities.contains("remote.screen")
+    }
+    private var inputAvailable: Bool { available && remote.controlAllowed != false }
     private var modern: Bool { bridge.peerCapabilities.contains("remote.screen.v2") }
     var body: some View {
         VStack(spacing: 0) {
@@ -56,7 +61,8 @@ struct MirrorView: View {
                     .foregroundStyle(available ? .green : .secondary).accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(bridge.peerName ?? "Phone mirror").font(.headline).lineLimit(1)
-                    Text(available ? "Connected" : "Not connected").font(.caption2).foregroundStyle(.secondary)
+                    Text(privacy.active ? "Privacy break" : available ? "Connected" : "Not connected").font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Button {
@@ -64,9 +70,24 @@ struct MirrorView: View {
                 } label: {
                     Image(systemName: remote.fastConnected ? "bolt.horizontal.fill" : "bolt.horizontal")
                 }
-                .help("Separate Bluetooth screen lane").accessibilityLabel("Bluetooth Classic screen lane")
+                .help("Choose Wi-Fi or Bluetooth screen connection").accessibilityLabel("Screen connection")
                 .popover(isPresented: $showConnection) {
                     VStack(alignment: .leading, spacing: 12) {
+                        Text("Choose a screen connection").font(.headline)
+                        Button("Use Bluetooth LE") {
+                            remote.useBLE(); showConnection = false
+                        }
+                        Text(
+                            "Wi-Fi screen: sharper images over an existing shared local network. The normal bridge stays on BLE."
+                        )
+                        .font(.caption).fixedSize(horizontal: false, vertical: true)
+                        Button("Connect Wi-Fi screen") {
+                            remote.connectLAN(); showConnection = false
+                        }
+                        .disabled(
+                            !available || remote.busy || remote.loadingFrame
+                                || !bridge.peerCapabilities.contains("remote.screen.lan"))
+                        Divider()
                         Text("Bluetooth Classic · experimental").font(.headline)
                         Text(
                             "Pair your phone in macOS Bluetooth settings first. This screen lane uses Classic Bluetooth; controls keep using the existing connection."
@@ -79,7 +100,7 @@ struct MirrorView: View {
                         Button("Connect screen lane") {
                             remote.connectFast(address: phoneAddress); showConnection = false
                         }
-                        .disabled(phoneAddress.isEmpty || !available || !modern || remote.busy)
+                        .disabled(phoneAddress.isEmpty || !available || !modern || remote.busy || remote.loadingFrame)
                     }.padding().frame(width: 320)
                 }
                 Menu {
@@ -88,6 +109,11 @@ struct MirrorView: View {
                             Text(quality.rawValue).tag(quality)
                         }
                     }.disabled(!modern)
+                    Divider()
+                    Picker("View scale", selection: $zoom) {
+                        Text("Fit").tag(1.0); Text("150%").tag(1.5); Text("200%").tag(2.0)
+                    }
+                    Text("At 150%/200%, drag pans the image. Use the arrows to scroll the phone.")
                     Text("Detail uses more bandwidth and can be slower over BLE.")
                     if !modern { Text("Install the matching Android build to enable Detail and keyboard input.") }
                 } label: {
@@ -103,6 +129,7 @@ struct MirrorView: View {
                 .disabled(!available || remote.busy)
             }.padding(.horizontal, 18).padding(.vertical, 12)
             Divider()
+            if privacy.active { PrivacyBreakView(privacy: privacy).padding(12) }
             GeometryReader { geometry in
                 ZStack {
                     Color.black
@@ -111,27 +138,37 @@ struct MirrorView: View {
                         let scale = min(
                             geometry.size.width / Double(remote.imageWidth),
                             geometry.size.height / Double(remote.imageHeight))
-                        let width = Double(remote.imageWidth) * scale
-                        let height = Double(remote.imageHeight) * scale
-                        Image(nsImage: image).resizable().interpolation(.high)
-                            .frame(width: width, height: height)
-                            .contentShape(Rectangle())
-                            .gesture(
-                                SpatialTapGesture().onEnded { value in
-                                    guard available && !remote.busy else { return }
-                                    remote.tap(x: value.location.x / width, y: value.location.y / height)
-                                }
-                            )
-                            .simultaneousGesture(
-                                DragGesture(minimumDistance: 10).onEnded { value in
-                                    guard available && !remote.busy else { return }
-                                    remote.swipe(
-                                        from: CGPoint(
-                                            x: value.startLocation.x / width, y: value.startLocation.y / height),
-                                        to: CGPoint(x: value.location.x / width, y: value.location.y / height))
-                                }
-                            )
-                            .accessibilityLabel("Phone screen. Click to tap; drag to swipe.")
+                        let width = Double(remote.imageWidth) * scale * zoom
+                        let height = Double(remote.imageHeight) * scale * zoom
+                        ScrollView([.horizontal, .vertical]) {
+                            Image(nsImage: image).resizable().interpolation(.high)
+                                .frame(width: width, height: height)
+                                .contentShape(Rectangle())
+                                .gesture(
+                                    SpatialTapGesture().onEnded { value in
+                                        guard inputAvailable && !remote.busy else { return }
+                                        remote.tap(x: value.location.x / width, y: value.location.y / height)
+                                    }
+                                )
+                                .simultaneousGesture(
+                                    DragGesture(minimumDistance: 10).onEnded { value in
+                                        guard inputAvailable && !remote.busy else { return }
+                                        remote.swipe(
+                                            from: CGPoint(
+                                                x: value.startLocation.x / width, y: value.startLocation.y / height),
+                                            to: CGPoint(x: value.location.x / width, y: value.location.y / height))
+                                    }, including: zoom == 1 ? .all : .none
+                                )
+                                .overlay(
+                                    MirrorScrollCapture(enabled: inputAvailable && zoom == 1 && !remote.busy) {
+                                        remote.scroll($0)
+                                    }
+                                )
+                                .accessibilityLabel(
+                                    "Phone screen. Click to tap. At Fit, drag or scroll to swipe; when zoomed, drag to pan."
+                                )
+                                .frame(minWidth: geometry.size.width, minHeight: geometry.size.height)
+                        }
                     } else {
                         VStack(spacing: 18) {
                             ConnectionOrbit(connected: available)
@@ -148,10 +185,23 @@ struct MirrorView: View {
                     .transaction { $0.animation = nil }
             }
             Divider()
-            HStack(spacing: 22) {
+            HStack(spacing: 16) {
                 control("Back", "chevron.backward", .remoteBack)
                 control("Home", "house", .remoteHome)
                 control("Notifications", "bell", .remoteNotifications)
+                Button {
+                    remote.scroll(.up)
+                } label: {
+                    Image(systemName: "arrow.up")
+                }
+                .help("Scroll phone up").accessibilityLabel("Scroll phone up").disabled(!inputAvailable || remote.busy)
+                Button {
+                    remote.scroll(.down)
+                } label: {
+                    Image(systemName: "arrow.down")
+                }
+                .help("Scroll phone down").accessibilityLabel("Scroll phone down").disabled(
+                    !inputAvailable || remote.busy)
                 Button {
                     showKeyboard.toggle()
                 } label: {
@@ -159,7 +209,7 @@ struct MirrorView: View {
                 }
                 .help(modern ? "Type on phone" : "Update the Android app to enable keyboard input").accessibilityLabel(
                     "Type on phone"
-                ).disabled(!available || remote.busy || !modern)
+                ).disabled(!inputAvailable || remote.busy || !modern)
                 .popover(isPresented: $showKeyboard) {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Type on phone").font(.headline)
@@ -196,8 +246,14 @@ struct MirrorView: View {
         .preferredColorScheme(.dark).tint(FestTheme.violet)
         .animation(reduceMotion || !playfulMotion ? nil : .easeOut(duration: 0.2), value: available)
         .modifier(TwinviaMotion())
-        .onAppear { remote.configure(supportsDetail: modern) }
-        .onChange(of: bridge.connected) { _, _ in remote.configure(supportsDetail: modern) }
+        .onAppear {
+            remote.configure(supportsDetail: modern, supportsLAN: bridge.peerCapabilities.contains("remote.screen.lan"))
+        }
+        .onChange(of: bridge.connected) { _, _ in
+            remote.configure(supportsDetail: modern, supportsLAN: bridge.peerCapabilities.contains("remote.screen.lan"))
+        }
+        .onChange(of: privacy.active) { _, value in if value { showKeyboard = false; typedText = "" } }
+        .onChange(of: remote.controlAllowed) { _, value in if value == false { showKeyboard = false; typedText = "" } }
         .onChange(of: remote.quality) { _, _ in if !remote.busy && available { remote.requestFrame() } }
     }
     private func control(_ label: String, _ icon: String, _ action: DeviceAction) -> some View {
@@ -206,10 +262,10 @@ struct MirrorView: View {
         } label: {
             Image(systemName: icon)
         }
-        .help(label).accessibilityLabel(label).disabled(!available || remote.busy)
+        .help(label).accessibilityLabel(label).disabled(!inputAvailable || remote.busy)
     }
     private func sendText() {
-        guard !typedText.isEmpty, typedText.utf16.count <= 1024, !remote.busy else { return }
+        guard inputAvailable, !typedText.isEmpty, typedText.utf16.count <= 1024, !remote.busy else { return }
         remote.type(typedText); typedText = ""
     }
 }

@@ -50,5 +50,23 @@ final class RemoteControlModelTests: XCTestCase {
         XCTAssertFalse(model.preview)
         XCTAssertNil(model.image)
     }
+    func testViewingRevocationCancelsRequestsAndLANRequiresNegotiation() {
+        var actions: [DeviceAction] = []
+        let model = RemoteControlModel { command in
+            actions.append(command.action); return UUID().uuidString
+        }
+        model.connectLAN(); XCTAssertTrue(actions.isEmpty)
+        model.requestFrame(); XCTAssertTrue(model.busy)
+        model.updateSession(
+            DeviceStatus(batteryPercent: 50, charging: false, locked: false, remoteViewing: false, remoteControl: false)
+        )
+        XCTAssertFalse(model.busy); XCTAssertFalse(model.preview); XCTAssertNil(model.image)
+        model.scroll(.down); XCTAssertEqual(actions.count, 1)
+        model.updateSession(
+            DeviceStatus(batteryPercent: 50, charging: false, locked: false, remoteViewing: true, remoteControl: true))
+        model.configure(supportsDetail: true, supportsLAN: true)
+        model.connectLAN(); XCTAssertEqual(actions.last, .remoteLANOpen)
+        model.disconnected()
+    }
 
 }

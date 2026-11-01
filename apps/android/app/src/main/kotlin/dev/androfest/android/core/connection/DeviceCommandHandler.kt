@@ -54,6 +54,7 @@ class DeviceCommandHandler(
                     DeviceAction.REMOTE_SNAPSHOT,
                     DeviceAction.REMOTE_SNAPSHOT_DETAIL,
                     DeviceAction.REMOTE_FAST_OPEN,
+                    DeviceAction.REMOTE_LAN_OPEN,
                     DeviceAction.REMOTE_TEXT,
                     DeviceAction.REMOTE_KEY,
                     DeviceAction.REMOTE_TAP,
@@ -68,16 +69,24 @@ class DeviceCommandHandler(
                     RemoteAccessibilityService.current
                         ?: error("Enable Twinvia screen control in Accessibility settings.")
                 when (command.action) {
-                    DeviceAction.REMOTE_FAST_OPEN -> {
+                    DeviceAction.REMOTE_FAST_OPEN,
+                    DeviceAction.REMOTE_LAN_OPEN -> {
                         val channel =
                             withContext(Dispatchers.IO) {
-                                dev.androfest.android.features.remote.FastScreenServer.open(context)
+                                if (command.action == DeviceAction.REMOTE_LAN_OPEN)
+                                    dev.androfest.android.features.remote.LanScreenServer.open(
+                                        context
+                                    )
+                                else
+                                    dev.androfest.android.features.remote.FastScreenServer.open(
+                                        context
+                                    )
                             }
                         RemoteControlSession.requireActive(context)
                         CommandResult(
                             id,
                             true,
-                            "Bluetooth Classic screen lane is ready to connect.",
+                            "The requested encrypted screen lane is ready to connect.",
                             channel = channel,
                         )
                     }

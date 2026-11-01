@@ -48,6 +48,7 @@ class DeviceFeatures(
                 DeviceAction.REMOTE_SNAPSHOT,
                 DeviceAction.REMOTE_SNAPSHOT_DETAIL,
                 DeviceAction.REMOTE_FAST_OPEN,
+                DeviceAction.REMOTE_LAN_OPEN,
                 DeviceAction.REMOTE_TEXT,
                 DeviceAction.REMOTE_KEY,
                 DeviceAction.REMOTE_TAP,
@@ -134,6 +135,9 @@ class DeviceFeatures(
             else media?.metadata?.getString(MediaMetadata.METADATA_KEY_ARTIST)?.take(512),
             media?.playbackState?.state == PlaybackState.STATE_PLAYING,
             ringtone?.isPlaying == true,
+            remoteViewing = dev.androfest.android.features.remote.RemoteControlSession.active.value,
+            remoteControl =
+                dev.androfest.android.features.remote.RemoteControlSession.control.value,
         )
     }
 

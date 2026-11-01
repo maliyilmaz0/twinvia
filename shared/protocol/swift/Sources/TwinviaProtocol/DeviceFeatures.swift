@@ -19,6 +19,7 @@ public enum DeviceAction: String, Codable, Sendable, CaseIterable {
     case mediaNext = "media.next"
     case mediaPrevious = "media.previous"
     case remoteSnapshot = "remote.snapshot"
+    case remoteLANOpen = "remote.lan.open"
     case remoteFastOpen = "remote.fast.open"
     case remoteSnapshotDetail = "remote.snapshot.detail"
     case remoteText = "remote.text"
@@ -159,13 +160,16 @@ public struct DeviceStatus: WirePayload, Equatable {
     public let mediaPlaying: Bool
     public let ringing: Bool
     public let call: PhoneCallState?
+    public let remoteViewing: Bool?
+    public let remoteControl: Bool?
     public init(
         batteryPercent: Int?, charging: Bool, locked: Bool, mediaTitle: String? = nil,
-        mediaArtist: String? = nil, mediaPlaying: Bool = false, ringing: Bool = false, call: PhoneCallState? = nil
+        mediaArtist: String? = nil, mediaPlaying: Bool = false, ringing: Bool = false, call: PhoneCallState? = nil,
+        remoteViewing: Bool? = nil, remoteControl: Bool? = nil
     ) {
         self.batteryPercent = batteryPercent; self.charging = charging; self.locked = locked
         self.mediaTitle = mediaTitle; self.mediaArtist = mediaArtist; self.mediaPlaying = mediaPlaying;
-        self.ringing = ringing; self.call = call
+        self.ringing = ringing; self.call = call; self.remoteViewing = remoteViewing; self.remoteControl = remoteControl
     }
     public func validate() throws {
         try call?.validate()

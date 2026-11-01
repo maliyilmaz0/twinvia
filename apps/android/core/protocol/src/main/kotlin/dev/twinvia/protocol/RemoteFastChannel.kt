@@ -9,8 +9,18 @@ import javax.crypto.spec.SecretKeySpec
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RemoteChannel(val session: String, val key: String) {
+data class RemoteChannel(
+    val session: String,
+    val key: String,
+    val host: String? = null,
+    val port: Int? = null,
+) {
     fun validate() {
+        require(
+            (host == null) == (port == null) &&
+                (host == null || isPrivateIPv4(host)) &&
+                (port == null || port in 1024..65535)
+        )
         require(
             key.length == 44 &&
                 UUID.fromString(session).toString() == session &&
@@ -19,6 +29,20 @@ data class RemoteChannel(val session: String, val key: String) {
     }
 
     companion object {
+        fun isPrivateIPv4(host: String): Boolean {
+            val pieces = host.split('.')
+            if (pieces.size != 4) return false
+            val values = pieces.map { it.toIntOrNull() ?: return false }
+            if (
+                values.any { it !in 0..255 } ||
+                    pieces.zip(values).any { it.first != it.second.toString() }
+            )
+                return false
+            return values[0] == 10 ||
+                (values[0] == 172 && values[1] in 16..31) ||
+                (values[0] == 192 && values[1] == 168)
+        }
+
         const val SERVICE_ID = "c6175595-dfce-4e3f-a61b-ec9efb8c9ba2"
     }
 }

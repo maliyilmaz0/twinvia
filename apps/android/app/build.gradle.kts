@@ -11,8 +11,9 @@ android {
         applicationId = "dev.androfest.android"
         minSdk = 33
         targetSdk = 36
-        versionCode = 11
-        versionName = "0.9.0"
+        versionCode = 12
+        versionName = "0.10.0"
+        testInstrumentationRunner = "dev.androfest.android.features.updates.UpdateDeviceValidation"
         buildConfigField(
             "String",
             "UPDATE_PUBLIC_KEY",

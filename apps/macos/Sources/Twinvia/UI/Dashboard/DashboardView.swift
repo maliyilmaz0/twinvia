@@ -56,6 +56,7 @@ struct DashboardView: View {
                 }.pickerStyle(.segmented)
 
                 if model.dashboardSection == 0 {
+                    PrivacyBreakView(privacy: model.privacy)
                     FeatureLaunchpad { model.dashboardSection = $0 }
                     GroupBox("Phone connection") {
                         HStack(alignment: .top, spacing: 24) {
@@ -172,6 +173,7 @@ struct DashboardView: View {
                     DailyFeaturesView(controls: model.controls, bridge: bridge, clipboard: model.clipboard)
                     UpdateSettingsView()
                     MotionSettingsView()
+                    StartupSettingsView()
                 }
                 if model.dashboardSection == 2 {
                     CallsView(model: model, calls: model.calls)

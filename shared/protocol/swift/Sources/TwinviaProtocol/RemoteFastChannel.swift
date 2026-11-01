@@ -4,9 +4,24 @@ import Foundation
 public struct RemoteChannel: Codable, Sendable {
     public let session: String
     public let key: String
+    public let host: String?
+    public let port: Int?
     public static let serviceID = "c6175595-dfce-4e3f-a61b-ec9efb8c9ba2"
-    public init(session: String, key: String) { self.session = session; self.key = key }
+    public init(session: String, key: String, host: String? = nil, port: Int? = nil) {
+        self.session = session; self.key = key; self.host = host; self.port = port
+    }
+    public static func isPrivateIPv4(_ host: String) -> Bool {
+        let pieces = host.split(separator: ".", omittingEmptySubsequences: false)
+        guard pieces.count == 4 else { return false }
+        let values = pieces.compactMap { UInt8($0) }
+        guard values.count == 4, zip(pieces, values).allSatisfy({ String($0.1) == $0.0 }) else { return false }
+        return values[0] == 10 || (values[0] == 172 && (16...31).contains(values[1]))
+            || (values[0] == 192 && values[1] == 168)
+    }
     public func validate() throws {
+        guard (host == nil) == (port == nil), host.map(Self.isPrivateIPv4) ?? true,
+            port.map({ (1024...65535).contains($0) }) ?? true
+        else { throw ProtocolError.invalidPayload }
         guard key.count == 44, UUID(uuidString: session) != nil, let bytes = Data(base64Encoded: key), bytes.count == 32
         else {
             throw ProtocolError.invalidPayload

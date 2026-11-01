@@ -69,6 +69,7 @@ class CommandProcessor(
                 DeviceAction.REMOTE_SNAPSHOT,
                 DeviceAction.REMOTE_SNAPSHOT_DETAIL,
                 DeviceAction.REMOTE_FAST_OPEN,
+                DeviceAction.REMOTE_LAN_OPEN,
                 DeviceAction.REMOTE_TEXT,
                 DeviceAction.REMOTE_KEY,
                 DeviceAction.REMOTE_TAP,

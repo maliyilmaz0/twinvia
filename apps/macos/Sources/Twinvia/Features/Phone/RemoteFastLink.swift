@@ -4,7 +4,9 @@ import TwinviaProtocol
 
 /// Optional Classic Bluetooth lane; all screen bytes use a key issued over pinned TLS.
 @MainActor
-final class RemoteFastLink: NSObject, IOBluetoothDeviceAsyncCallbacks, IOBluetoothRFCOMMChannelDelegate {
+final class RemoteFastLink: NSObject, RemoteScreenLink, IOBluetoothDeviceAsyncCallbacks,
+    IOBluetoothRFCOMMChannelDelegate
+{
     struct PairedPhone: Identifiable { let id: String; let name: String }
     static var phones: [PairedPhone] {
         (IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice] ?? []).compactMap {

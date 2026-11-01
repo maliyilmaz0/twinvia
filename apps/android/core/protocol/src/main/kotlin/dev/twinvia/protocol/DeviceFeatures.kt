@@ -22,6 +22,7 @@ enum class DeviceAction {
     @kotlinx.serialization.SerialName("media.next") MEDIA_NEXT,
     @kotlinx.serialization.SerialName("media.previous") MEDIA_PREVIOUS,
     @kotlinx.serialization.SerialName("remote.snapshot") REMOTE_SNAPSHOT,
+    @kotlinx.serialization.SerialName("remote.lan.open") REMOTE_LAN_OPEN,
     @kotlinx.serialization.SerialName("remote.fast.open") REMOTE_FAST_OPEN,
     @kotlinx.serialization.SerialName("remote.snapshot.detail") REMOTE_SNAPSHOT_DETAIL,
     @kotlinx.serialization.SerialName("remote.text") REMOTE_TEXT,
@@ -159,6 +160,8 @@ data class DeviceStatus(
     val mediaPlaying: Boolean = false,
     val ringing: Boolean = false,
     val call: PhoneCallState? = null,
+    val remoteViewing: Boolean? = null,
+    val remoteControl: Boolean? = null,
 )
 
 @Serializable data class SharedText(val text: String, val isClipboard: Boolean? = null)

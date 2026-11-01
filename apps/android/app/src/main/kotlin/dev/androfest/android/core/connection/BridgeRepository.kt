@@ -360,6 +360,7 @@ class BridgeRepository(
                                             "phone.browse",
                                             "remote.screen",
                                             "remote.screen.v2",
+                                            "remote.screen.lan",
                                         )
                                 ),
                         )
