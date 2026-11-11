@@ -54,3 +54,15 @@ The script does not reset battery statistics or simulate unplugging. Mac CPU use
 ## CI evidence
 
 CI exports Android JUnit XML, HTML test reports, and lint reports; Mac job logs contain Swift test results. Hardware tests are deliberate local checks, not green-check substitutes. Repository configuration, local tests, real-device behavior, and a successfully run remote pipeline are separate evidence levels.
+
+## Mirroring and signed updates
+
+`RemoteFrameCipherTests` / `RemoteFrameCipherTest` use the same independent AES-GCM vector and exercise tampering, reflection, replay, reordering and size rejection. Mac image tests inspect real JPEG dimensions against protocol metadata. Android update tests verify Ed25519 signatures and bounded/repository-scoped metadata; Python publication tests use real OpenSSL signatures and reject a mismatched update identity. The native signing regression includes a nested Mach-O framework. These checks do not establish physical RFCOMM throughput or Android installer behavior.
+
+Without a phone, validate compilation, signatures, protocol tests and the Mac window's disconnected state. With the phone, verify permission denial/revocation, five-minute expiry, lock/disconnect, BLE/Classic coexistence, gestures/text, memory/latency at both qualities, then a real signed APK update preserving data. Verify Mac update download, signature rejection, installation and relaunch using a controlled new signed build before publishing an upgrade claim. See [mirroring](remote-control.md) and [updates](updates.md).
+
+## Playful interface checks
+
+Both platforms expose **Playful motion** in settings (Mac: General → Make it yours; Android: Settings → Appearance). The saved preference disables decorative motion independently of bridge operation. System Reduce Motion / disabled Android animations take priority. Connection text and icons remain available in the static state. Android stops the orbit while the activity is not resumed; Mac ambient timelines pause outside active/visible presentation.
+
+Validate navigation, focus, smallest supported window, larger text, and the motion toggle before claiming UI verification. `AppearanceSnapshotTests` renders the real Mac launchpad at a constrained width without a phone; set `TWINVIA_UI_SNAPSHOTS` to a local artifact directory to save that render. This does not replace live desktop or hardware tests.

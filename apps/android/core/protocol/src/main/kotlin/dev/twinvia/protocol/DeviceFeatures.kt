@@ -22,6 +22,11 @@ enum class DeviceAction {
     @kotlinx.serialization.SerialName("media.next") MEDIA_NEXT,
     @kotlinx.serialization.SerialName("media.previous") MEDIA_PREVIOUS,
     @kotlinx.serialization.SerialName("remote.snapshot") REMOTE_SNAPSHOT,
+    @kotlinx.serialization.SerialName("remote.lan.open") REMOTE_LAN_OPEN,
+    @kotlinx.serialization.SerialName("remote.fast.open") REMOTE_FAST_OPEN,
+    @kotlinx.serialization.SerialName("remote.snapshot.detail") REMOTE_SNAPSHOT_DETAIL,
+    @kotlinx.serialization.SerialName("remote.text") REMOTE_TEXT,
+    @kotlinx.serialization.SerialName("remote.key") REMOTE_KEY,
     @kotlinx.serialization.SerialName("remote.tap") REMOTE_TAP,
     @kotlinx.serialization.SerialName("remote.swipe") REMOTE_SWIPE,
     @kotlinx.serialization.SerialName("remote.back") REMOTE_BACK,
@@ -83,6 +88,15 @@ data class DeviceCommand(
                     require(!text.isNullOrBlank() && text.length <= 4096)
                 else require(text == null)
             }
+            DeviceAction.REMOTE_TEXT ->
+                require(
+                    !text.isNullOrEmpty() &&
+                        text.length <= 1024 &&
+                        key == null &&
+                        actionToken == null
+                )
+            DeviceAction.REMOTE_KEY ->
+                require(text == null && key in listOf("backspace", "enter") && actionToken == null)
             DeviceAction.REMOTE_TAP,
             DeviceAction.REMOTE_SWIPE -> {
                 require(text == null && actionToken == null && key != null)
@@ -120,12 +134,17 @@ data class CommandResult(
     val message: String,
     val data: PhonePage? = null,
     val screen: RemoteScreen? = null,
+    val channel: RemoteChannel? = null,
 )
 
 @Serializable
 data class RemoteScreen(val jpegBase64: String, val width: Int, val height: Int) {
+    companion object {
+        const val MAX_PIXELS = 4_194_304L
+    }
+
     fun validate() {
-        require(width in 1..640 && height in 1..640)
+        require(width in 1..2560 && height in 1..2560 && width.toLong() * height <= MAX_PIXELS)
         require(jpegBase64.length in 1..180_000 && jpegBase64.length % 4 == 0)
         require(
             jpegBase64.all {
@@ -145,6 +164,8 @@ data class DeviceStatus(
     val mediaPlaying: Boolean = false,
     val ringing: Boolean = false,
     val call: PhoneCallState? = null,
+    val remoteViewing: Boolean? = null,
+    val remoteControl: Boolean? = null,
 )
 
 @Serializable data class SharedText(val text: String, val isClipboard: Boolean? = null)

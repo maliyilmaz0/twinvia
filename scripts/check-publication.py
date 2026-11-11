@@ -11,14 +11,14 @@ ROOT_FILES = {
     ".editorconfig", ".gitattributes", ".gitignore", ".swift-format", ".gitlab-ci.yml",
     "README.md", "CONTRIBUTING.md", "SECURITY.md", ".gitleaks.toml",
 }
-DOCS = {"architecture.md", "development.md", "testing.md", "ble-transport.md", "clipboard-sync.md", "branding.md", "releasing.md", "transports.md", "roadmap.md", "github-security.md", "remote-control.md"}
+DOCS = {"architecture.md", "development.md", "testing.md", "ble-transport.md", "clipboard-sync.md", "branding.md", "releasing.md", "transports.md", "roadmap.md", "github-security.md", "remote-control.md", "updates.md"}
 SCRIPTS = {
     "common.sh", "build-android.sh", "build-macos.sh", "build-ble-helper.py",
     "build-clipboard-helper.py", "prepare-nearby-sdk.py", "sign-macos.py",
     "install-android.sh", "enable-clipboard.py", "doctor.sh", "test.sh",
     "test-ble-pairing.py", "test-clipboard.py", "measure-bridge-resources.py",
     "check-publication.py", "format-code.py", "check.sh", "setup-android-ci.sh", "generate-brand-assets.swift",
-    "package-release.py",
+    "package-release.py", "sign-update-release.py",
     "install-security-tools.py", "check-security.py", "test-dependency-policy.py",
 }
 GENERATED = {".git", ".tooling", ".artifacts", ".gradle", ".kotlin", "build", ".build", ".swiftpm", "DerivedData", "__pycache__", "xcuserdata"}
@@ -56,7 +56,7 @@ def permitted(name: str) -> bool:
         )
     return name.startswith((
         "apps/android/", "apps/macos/", "shared/protocol/", ".github/workflows/",
-        "tools/clipboard-helper/", "tools/clipboard-probe/", "vendor/nearby/", "assets/brand/",
+        "tools/clipboard-helper/", "tools/clipboard-probe/", "vendor/nearby/", "vendor/sparkle/", "assets/brand/",
     ))
 
 

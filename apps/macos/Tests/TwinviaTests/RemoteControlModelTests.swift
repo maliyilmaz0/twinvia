@@ -31,4 +31,42 @@ final class RemoteControlModelTests: XCTestCase {
         XCTAssertFalse(model.busy)
         XCTAssertNil(model.image)
     }
+    func testDetailIsNegotiatedAndPermissionFailureStopsPreview() {
+        let id = UUID().uuidString
+        var sent: [DeviceCommand] = []
+        let model = RemoteControlModel { command in
+            sent.append(command); return id
+        }
+        model.quality = .detail
+        model.configure(supportsDetail: false)
+        model.requestFrame()
+        XCTAssertEqual(sent.last?.action, .remoteSnapshot)
+        model.receive(CommandResult(requestId: id, success: false, message: "No lease"))
+        model.configure(supportsDetail: true)
+        model.setPreview(true)
+        XCTAssertEqual(sent.last?.action, .remoteSnapshotDetail)
+        XCTAssertTrue(model.preview)
+        model.receive(CommandResult(requestId: id, success: false, message: "No lease"))
+        XCTAssertFalse(model.preview)
+        XCTAssertNil(model.image)
+    }
+    func testViewingRevocationCancelsRequestsAndLANRequiresNegotiation() {
+        var actions: [DeviceAction] = []
+        let model = RemoteControlModel { command in
+            actions.append(command.action); return UUID().uuidString
+        }
+        model.connectLAN(); XCTAssertTrue(actions.isEmpty)
+        model.requestFrame(); XCTAssertTrue(model.busy)
+        model.updateSession(
+            DeviceStatus(batteryPercent: 50, charging: false, locked: false, remoteViewing: false, remoteControl: false)
+        )
+        XCTAssertFalse(model.busy); XCTAssertFalse(model.preview); XCTAssertNil(model.image)
+        model.scroll(.down); XCTAssertEqual(actions.count, 1)
+        model.updateSession(
+            DeviceStatus(batteryPercent: 50, charging: false, locked: false, remoteViewing: true, remoteControl: true))
+        model.configure(supportsDetail: true, supportsLAN: true)
+        model.connectLAN(); XCTAssertEqual(actions.last, .remoteLANOpen)
+        model.disconnected()
+    }
+
 }

@@ -89,3 +89,9 @@ __pycache__/
 !/docs/github-security.md
 !/docs/remote-control.md
 /design-system/
+
+!/scripts/sign-update-release.py
+
+!/docs/updates.md
+!/vendor/sparkle/
+!/vendor/sparkle/LICENSE

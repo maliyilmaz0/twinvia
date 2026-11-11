@@ -11,7 +11,7 @@ Planning baseline: **Twinvia 0.9.0 Developer Preview**, reviewed **27 October 20
 | Clipboard onboarding | A Mac setup assistant that detects the phone and installed version, explains shell-helper access, activates the prebuilt helper after explicit USB authorization, and reports actionable failures | A new user can complete setup without a terminal; an already authorized phone can reactivate without rebuilding or changing pairing |
 | Clipboard health | Separate transport, permission, lock-state, helper-process and listener status; a visible recovery action | UI distinguishes a disconnected Mac from a missing helper; reconnect/unlock recovers automatically while the helper remains alive; reboot explains why activation is needed |
 | Stable distribution | Dedicated Android release signing, Developer ID/hardened/notarized Mac packaging, versioned installers, and verified update delivery | An upgrade preserves app data, permissions where supported, and saved trust; published signatures/checksums are verified; updates cannot install unrelated code |
-| Startup and lifecycle | Opt-in Mac launch at login, clearer Android background-service guidance, and broader sleep/Doze/radio recovery validation | Repeated reboot, sleep/wake and out-of-range trials preserve pairing; a stopped or permission-denied component produces an accurate state rather than a false connected indicator |
+| Startup and lifecycle | Mac launch at login is in source; Android background-service guidance and broader sleep/Doze/radio recovery validation remain | Repeated reboot, sleep/wake and out-of-range trials preserve pairing; a stopped or permission-denied component produces an accurate state rather than a false connected indicator |
 | Device compatibility | Longer battery/resource trials and an OS/vendor compatibility matrix; investigate Intel/universal Mac builds | Measurements name devices, OS, transport, duration and unplugged power conditions; only tested configurations are advertised |
 
 Clipboard adapter alternatives, including optional Shizuku and an explicit no-helper fallback, remain **exploratory** until tested. A normal foreground service, accessibility permission or device-admin checkbox must not be advertised as universal Android background clipboard access. See [clipboard improvement options](clipboard-sync.md#improvement-options).
@@ -38,7 +38,7 @@ The BLE preview is not an acceptable basis for a usable live desktop stream. A s
 
 ### Stage 3 — Remote input: basic source prototype; richer input exploratory
 
-The source build adds tap, swipe, Back, Home and opening the notification panel after a separate phone-side control approval. Text entry and other actions remain exploratory. Android accessibility gesture APIs are the input adapter, not a clipboard-reading permission or automatic approval to control the device. See [AccessibilityService](https://developer.android.com/reference/android/accessibilityservice/AccessibilityService).
+The source build adds tap, swipe, explicit text/Enter/Backspace input, Back, Home and opening the notification panel after a separate phone-side control approval. Scroll-wheel gestures, visible scroll controls and zoom/pan are in source. Broader key handling and live video remain exploratory. Android accessibility gesture APIs are the input adapter, not a clipboard-reading permission or automatic approval to control the device. See [AccessibilityService](https://developer.android.com/reference/android/accessibilityservice/AccessibilityService).
 
 Screen-view consent and input-control consent must remain separate. An unpaired peer, ended session, locked phone or revoked permission must reject input. Security dialogs and OS restrictions remain authoritative. No silent unlock, password collection, hidden unattended control or private application storage access is planned.
 
@@ -54,7 +54,7 @@ Screen-view consent and input-control consent must remain separate. An unpaired 
 | System integration | Finder/share-sheet entry points, Android sharing intents for additional formats, clearer keyboard shortcuts and deep links | Planned; retain explicit approval and Android URI permissions |
 | Multiple devices | Named trusted devices, intentional active-target selection and individual revoke/unpair controls | Exploratory; prevent clipboard/notification broadcast to every paired device by default |
 | Privacy and support | Per-feature permissions, session visibility, safe diagnostic export, documented retention/deletion and troubleshooting | Planned; diagnostics exclude clipboard text, pairing secrets and notification content by default |
-| Updates and recovery | Signed update notifications, compatible protocol/version negotiation and safe migration/recovery | Planned; no forced reinstall or trust reset as a normal update step |
+| Updates and recovery | Signed GitHub stable update channel, Sparkle and Android system-installer flow are in source builds | Real installation/relaunch and old-preview certificate migration need device validation; see [updates](updates.md). No forced reinstall or trust reset. |
 
 ## Calls, messaging, and faster wireless links
 

@@ -12,6 +12,17 @@ enum NotificationCenterSnapshot {
         }
     }
 
+    static func mirroredNotificationIdentifiers() async -> [String] {
+        await withCheckedContinuation { continuation in
+            UNUserNotificationCenter.current().getDeliveredNotifications { @Sendable notifications in
+                continuation.resume(
+                    returning: notifications.filter {
+                        $0.request.content.userInfo["notificationKey"] is String
+                    }.map { $0.request.identifier })
+            }
+        }
+    }
+
     static func deliveredIdentifiers(for packageName: String) async -> [String] {
         await withCheckedContinuation { continuation in
             UNUserNotificationCenter.current().getDeliveredNotifications { @Sendable notifications in
