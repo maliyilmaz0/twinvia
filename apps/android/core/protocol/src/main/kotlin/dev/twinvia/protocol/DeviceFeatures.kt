@@ -139,8 +139,12 @@ data class CommandResult(
 
 @Serializable
 data class RemoteScreen(val jpegBase64: String, val width: Int, val height: Int) {
+    companion object {
+        const val MAX_PIXELS = 4_194_304L
+    }
+
     fun validate() {
-        require(width in 1..2560 && height in 1..2560 && width.toLong() * height <= 4_194_304)
+        require(width in 1..2560 && height in 1..2560 && width.toLong() * height <= MAX_PIXELS)
         require(jpegBase64.length in 1..180_000 && jpegBase64.length % 4 == 0)
         require(
             jpegBase64.all {

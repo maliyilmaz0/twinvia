@@ -83,9 +83,7 @@ class RemoteAccessibilityService : AccessibilityService() {
                         ?: error("Could not read the phone screen.")
                 val width = hardware.width
                 val height = hardware.height
-                val scale = minOf(1.0, (if (detail) 2160.0 else 480.0) / maxOf(width, height))
-                val targetWidth = maxOf(1, (width * scale).toInt())
-                val targetHeight = maxOf(1, (height * scale).toInt())
+                val (targetWidth, targetHeight) = ScreenCaptureSize.fit(width, height, detail)
                 val software =
                     try {
                         hardware.copy(Bitmap.Config.ARGB_8888, false)
